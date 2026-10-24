@@ -9,10 +9,10 @@
 | Участник | Роль | Зона ответственности | GitHub | Статус в репо |
 | :--- | :--- | :--- | :--- | :---: |
 | **Ева** | Project Manager | Координация команды, контроль дедлайнов, управление бэклогом, фасилитация | [@doubleskvish](https://github.com/doubleskvish) | ✅ Добавлена |
-| **Александр** | Fullstack Developer | Разработка архитектуры, бэкенда, фронтенда и интеграция сервисов | [@shiyanalex](https://github.com/shiyanalex) | ✅ Добавлен |
-| **Богдан** | ML Engineer | Выбор и интеграция ML/LLM-моделей, промпт-стратегия, пайплайны данных | [@todyas](https://github.com/todyas) | ✅ Добавлен |
-| **Арина** | Designer | Проектирование UI/UX, дизайн экранов, подготовка графических ассетов и презентации | — | ⏳ Добавится позже |
-| **Александр** | Tester / Speaker | Тестирование продукта, проверка пользовательских сценариев, подготовка и проведение финального питча | — | ⏳ Добавится позже |
+| **Арина** | Designer | Проектирование UI/UX, дизайн экранов, подготовка графических ассетов и презентации | [@vsekapec](https://github.com/vsekapec) | ✅ Добавлена |
+| **Александр** | Fullstack Developer | Разработка архитектуры, бэкенда, фронтенда и интеграция сервисов | [@shiyanalex](https://github.com/shiyanalex) | ⏳ Ожидает принятия инвайта |
+| **Богдан** | ML Engineer | Выбор и интеграция ML/LLM-моделей, промпт-стратегия, пайплайны данных | [@todyas](https://github.com/todyas) | ⏳ Ожидает принятия инвайта |
+| **Александр** | Tester / Speaker | Тестирование продукта, проверка пользовательских сценариев, подготовка и проведение финального питча | — | ⏳ Ожидает GitHub-аккаунт |
 
 ---
 
@@ -88,28 +88,22 @@
 
 ## 📋 План действий команды (GitHub Issues)
 
-Все задачи распределены по этапам в [GitHub Issues](https://github.com/doubleskvish/vibecode-fkn/issues):
+### 🟢 Активно до открытия (до 10:30, 25 октября)
+- [ ] **[Issue #1](https://github.com/doubleskvish/vibecode-fkn/issues/1)**: `[Pre-Hackathon] Подготовка команды, доступов и проверка API-ключей к открытию`
+  - *Ответственные в GitHub:* [@doubleskvish](https://github.com/doubleskvish), [@vsekapec](https://github.com/vsekapec)
 
-### До открытия (до 10:30, 25 октября)
-- [ ] **[Issue #1](https://github.com/doubleskvish/vibecode-fkn/issues/1)**: `[Pre-Hackathon] Подготовка окружения, доступов и проверка API-ключей`
+---
 
-### Шаг 1: Старт (10:30, 25 октября)
-- [ ] **[Issue #2](https://github.com/doubleskvish/vibecode-fkn/issues/2)**: `[Шаг 1] Открытие хакатона, фиксация темы и выбор концепции MVP`
+### ⏳ Активируются на открытии и в ходе хакатона (с 10:30)
+*Следующие задачи подготовлены и будут открыты сразу после оглашения тем и старта 7-часового таймера разработки:*
 
-### Шаг 2: Стек и технологии
-- [ ] **[Issue #3](https://github.com/doubleskvish/vibecode-fkn/issues/3)**: `[Шаг 2] Выбор технологического стека, архитектуры и AI-инструментов`
-
-### Шаг 3: Декомпозиция и распределение
-- [ ] **[Issue #4](https://github.com/doubleskvish/vibecode-fkn/issues/4)**: `[Шаг 3] Декомпозиция задач, определение MVP-скоупа и ролей`
-
-### Шаг 4: Фаза реализации (7 часов)
-- [ ] **[Issue #5](https://github.com/doubleskvish/vibecode-fkn/issues/5)**: `[Шаг 4 / Design] Разработка UI/UX экранов и графических ассетов`
-- [ ] **[Issue #6](https://github.com/doubleskvish/vibecode-fkn/issues/6)**: `[Шаг 4 / Fullstack] Разработка бэкенда, клиентского интерфейса и интеграций`
-- [ ] **[Issue #7](https://github.com/doubleskvish/vibecode-fkn/issues/7)**: `[Шаг 4 / ML] Интеграция AI-моделей, промпт-инжиниринг и оркестрация`
-- [ ] **[Issue #8](https://github.com/doubleskvish/vibecode-fkn/issues/8)**: `[Шаг 4 / AI Strategy] Заполнение документа AI Engineering Strategy`
-
-### Шаг 5: Тестирование и Code Freeze
-- [ ] **[Issue #9](https://github.com/doubleskvish/vibecode-fkn/issues/9)**: `[Шаг 5 / QA] Сквозное тестирование сценариев, багфиксинг и Code Freeze`
-
-### Финал: Защита проекта
-- [ ] **[Issue #10](https://github.com/doubleskvish/vibecode-fkn/issues/10)**: `[Финал / Pitch] Подготовка презентации, репетиция питча и защита`
+- **Шаг 1:** [Issue #2](https://github.com/doubleskvish/vibecode-fkn/issues/2) — Открытие хакатона, фиксация темы и выбор концепции MVP *(10:30)*
+- **Шаг 2:** [Issue #3](https://github.com/doubleskvish/vibecode-fkn/issues/3) — Выбор технологического стека, архитектуры и AI-инструментов
+- **Шаг 3:** [Issue #4](https://github.com/doubleskvish/vibecode-fkn/issues/4) — Декомпозиция задач, определение MVP-скоупа и ролей
+- **Шаг 4 (Разработка MVP):**
+  - [Issue #5](https://github.com/doubleskvish/vibecode-fkn/issues/5) — Разработка UI/UX экранов и графических ассетов (Арина)
+  - [Issue #6](https://github.com/doubleskvish/vibecode-fkn/issues/6) — Разработка бэкенда, интерфейса и интеграций (Александр)
+  - [Issue #7](https://github.com/doubleskvish/vibecode-fkn/issues/7) — Интеграция AI-моделей, промпт-инжиниринг и оркестрация (Богдан)
+  - [Issue #8](https://github.com/doubleskvish/vibecode-fkn/issues/8) — Заполнение документа AI Engineering Strategy (команда)
+- **Шаг 5:** [Issue #9](https://github.com/doubleskvish/vibecode-fkn/issues/9) — Сквозное тестирование сценариев, багфиксинг и Code Freeze
+- **Финал:** [Issue #10](https://github.com/doubleskvish/vibecode-fkn/issues/10) — Подготовка презентации, репетиция питча и защита проекта
