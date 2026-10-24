@@ -86,13 +86,11 @@
 
 ---
 
-## 📋 Актуальные задачи (GitHub Issues)
+## 📋 Актуальная задача (GitHub Issues)
 
-В репозитории зафиксированы активные задачи до старта и на момент открытия:
+В репозитории зафиксирована единая стартовая задача для команды:
 
-- [ ] **[Issue #1: Pre-Hackathon](https://github.com/doubleskvish/vibecode-fkn/issues/1)**: `[Pre-Hackathon] Подготовка команды, доступов и проверка API-ключей к открытию`
-  - *Ответственные в GitHub:* [@doubleskvish](https://github.com/doubleskvish), [@vsekapec](https://github.com/vsekapec)
-- [ ] **[Issue #2: Шаг 1](https://github.com/doubleskvish/vibecode-fkn/issues/2)**: `[Шаг 1] Открытие хакатона, фиксация темы и выбор концепции MVP`
-  - *Ответственные в GitHub:* [@doubleskvish](https://github.com/doubleskvish), [@vsekapec](https://github.com/vsekapec)
+- [ ] **[Issue #1](https://github.com/doubleskvish/vibecode-fkn/issues/1)**: `[Старт и Шаг 1] Открытие хакатона, фиксация темы/критериев и выбор концепции MVP`
+  - *Ответственные в GitHub:* [@doubleskvish](https://github.com/doubleskvish), [@vsekapec](https://github.com/vsekapec) *(после принятия инвайтов также: [@shiyanalex](https://github.com/shiyanalex), [@todyas](https://github.com/todyas), [@MVRto01](https://github.com/MVRto01))*
 
-*(Последующие задачи под конкретную реализацию будут сформированы на Шагах 2–5 после того, как в 10:30 станут известны темы).*
+*(Задачи под конкретную реализацию будут сформированы на Шагах 2–5 после того, как в 10:30 станут известны темы).*
