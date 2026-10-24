@@ -86,24 +86,13 @@
 
 ---
 
-## 📋 План действий команды (GitHub Issues)
+## 📋 Актуальные задачи (GitHub Issues)
 
-### 🟢 Активно до открытия (до 10:30, 25 октября)
-- [ ] **[Issue #1](https://github.com/doubleskvish/vibecode-fkn/issues/1)**: `[Pre-Hackathon] Подготовка команды, доступов и проверка API-ключей к открытию`
+В репозитории зафиксированы активные задачи до старта и на момент открытия:
+
+- [ ] **[Issue #1: Pre-Hackathon](https://github.com/doubleskvish/vibecode-fkn/issues/1)**: `[Pre-Hackathon] Подготовка команды, доступов и проверка API-ключей к открытию`
+  - *Ответственные в GitHub:* [@doubleskvish](https://github.com/doubleskvish), [@vsekapec](https://github.com/vsekapec)
+- [ ] **[Issue #2: Шаг 1](https://github.com/doubleskvish/vibecode-fkn/issues/2)**: `[Шаг 1] Открытие хакатона, фиксация темы и выбор концепции MVP`
   - *Ответственные в GitHub:* [@doubleskvish](https://github.com/doubleskvish), [@vsekapec](https://github.com/vsekapec)
 
----
-
-### ⏳ Активируются на открытии и в ходе хакатона (с 10:30)
-*Следующие задачи подготовлены и будут открыты сразу после оглашения тем и старта 7-часового таймера разработки:*
-
-- **Шаг 1:** [Issue #2](https://github.com/doubleskvish/vibecode-fkn/issues/2) — Открытие хакатона, фиксация темы и выбор концепции MVP *(10:30)*
-- **Шаг 2:** [Issue #3](https://github.com/doubleskvish/vibecode-fkn/issues/3) — Выбор технологического стека, архитектуры и AI-инструментов
-- **Шаг 3:** [Issue #4](https://github.com/doubleskvish/vibecode-fkn/issues/4) — Декомпозиция задач, определение MVP-скоупа и ролей
-- **Шаг 4 (Разработка MVP):**
-  - [Issue #5](https://github.com/doubleskvish/vibecode-fkn/issues/5) — Разработка UI/UX экранов и графических ассетов (Арина)
-  - [Issue #6](https://github.com/doubleskvish/vibecode-fkn/issues/6) — Разработка бэкенда, интерфейса и интеграций (Александр)
-  - [Issue #7](https://github.com/doubleskvish/vibecode-fkn/issues/7) — Интеграция AI-моделей, промпт-инжиниринг и оркестрация (Богдан)
-  - [Issue #8](https://github.com/doubleskvish/vibecode-fkn/issues/8) — Заполнение документа AI Engineering Strategy (команда)
-- **Шаг 5:** [Issue #9](https://github.com/doubleskvish/vibecode-fkn/issues/9) — Сквозное тестирование сценариев, багфиксинг и Code Freeze
-- **Финал:** [Issue #10](https://github.com/doubleskvish/vibecode-fkn/issues/10) — Подготовка презентации, репетиция питча и защита проекта
+*(Последующие задачи под конкретную реализацию будут сформированы на Шагах 2–5 после того, как в 10:30 станут известны темы).*
