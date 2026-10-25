@@ -6,10 +6,11 @@
 
 ## 📁 Структура материалов проекта
 
-- 📥 **[docs/initial_materials/](docs/initial_materials/) — Исходные материалы (даны изначально):**
-  - **[techdoc_bogdan.pdf](docs/initial_materials/«Общий%20знаменатель»%20—%20техдок%20для%20хакатона-1.pdf)** — полное техническое задание и архитектурный техдок от Богдана.
-  - [README.md](docs/initial_materials/README.md) — регламент турнира, 4 темы, тайминги и критерии оценивания с весами.
-- 📤 **[docs/project_materials/](docs/project_materials/) — Материалы в процессе разработки:**
+- 📥 **[docs/initial_materials/](docs/initial_materials/) — Исходные материалы (предоставлены организаторами):**
+  - **[opening_presentation.md](docs/initial_materials/opening_presentation.md)** — расшифровка официальной презентации открытия (правила, 4 темы, тайминги, веса критериев со слайда 7).
+  - [README.md](docs/initial_materials/README.md) — сводная информация об условиях участия и правилах отбора в топ-10.
+- 📤 **[docs/project_materials/](docs/project_materials/) — Материалы разработки проекта:**
+  - **[«Общий знаменатель» — техдок для хакатона-1.pdf](docs/project_materials/«Общий%20знаменатель»%20—%20техдок%20для%20хакатона-1.pdf)** — архитектурный техдок и ТЗ проекта от Богдана (@Bodya).
   - **[demo_script.md](docs/project_materials/demo_script.md)** — канонический сценарий живого демо из 8 реплик с 3 типами вмешательства агента.
   - **[data_models.md](docs/project_materials/data_models.md)** — схемы Pydantic (`RoomState`, `Item`, `Relation`, `Decision`) и спецификация Patch-операций.
 
