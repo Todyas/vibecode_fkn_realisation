@@ -203,15 +203,29 @@ async def debug_llm():
             f"<h1>Последние LLM-вызовы</h1>{body}")
 
 
+ASSETS_SRC = config.ROOT_DIR / "frontend" / "src" / "assets"
+
+
+@app.get("/logo.png")
+async def logo():
+    return FileResponse(ASSETS_SRC / "logo.png")
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    return FileResponse(ASSETS_SRC / "favicon.png", media_type="image/png")
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index():
     llm_ok = "✅" if config.llm_enabled() else "❌ нет LLM_API_KEY"
     bot_ok = "✅" if registry.notifier else "❌ нет TG_BOT_TOKEN"
     return f"""<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width">
-<title>/no_idea</title>
+<title>/no_idea</title><link rel=icon href="/favicon.ico">
 <style>body{{font:16px system-ui;max-width:640px;margin:40px auto;padding:0 16px;line-height:1.5}}
-code{{background:#f2f2f2;padding:2px 5px;border-radius:4px}}button{{font:inherit;padding:8px 14px}}</style>
-<h1>/no_idea</h1>
+code{{background:#f2f2f2;padding:2px 5px;border-radius:4px}}a{{color:#4B70E7}}
+button{{font:inherit;padding:8px 14px;background:#4B70E7;color:#fff;border:0;border-radius:8px;cursor:pointer}}</style>
+<img src="/logo.png" alt="" width=96 height=96 style="object-fit:contain"><h1>/no_idea</h1>
 <p>Сервер работает. Бот: {bot_ok} · LLM: {llm_ok} · кэш: {config.CACHE_MODE} · тем: {len(registry.rooms)}</p>
 <p>Добавь бота в группу и напиши <code>/no_idea start Тема</code> — бот пришлёт ссылку на канвас.</p>
 <h3>Без Telegram</h3>
