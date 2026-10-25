@@ -160,6 +160,12 @@ async def send_canvas(bot: Bot, room: TopicRoom, chat_id: int, caption: str,
                            reply_to_message_id=reply_to, allow_sending_without_reply=True)
 
 
+async def send_pdf(bot: Bot, room: TopicRoom, chat_id: int) -> None:
+    pdf = await snapshot.canvas_pdf(room.topic.web_token)
+    if pdf:
+        await bot.send_document(chat_id, BufferedInputFile(pdf, f"{room.topic.name}.pdf"))
+
+
 async def close_topic(room: TopicRoom, reg: Registry) -> str:
     """stop: отцепить от чата -> дождаться пачек -> Consolidator -> closed -> Summarizer."""
     reg.detach(room)
@@ -220,12 +226,14 @@ async def handle_command(m: TgMessage, bot: Bot, reg: Registry) -> None:
         summary = await close_topic(room, reg)
         caption = f"Тема <b>«{e(room.topic.name)}»</b> закрыта.\n\n{e(summary[:700])}\n\n🗺 {link(room)}"
         await send_canvas(bot, room, chat_id, caption, reply_to=m.message_id)
+        await send_pdf(bot, room, chat_id)
     elif cmd.sub == "export":
         await bot.send_chat_action(chat_id, "upload_photo")
         if room.topic.status == "open" or not room.topic.summary:
             await room.run_job(lambda: pipeline.summarize(room))
         caption = f"<b>«{e(room.topic.name)}»</b>\n\n{e((room.topic.summary or '')[:700])}\n\n🗺 {link(room)}"
         await send_canvas(bot, room, chat_id, caption, reply_to=m.message_id)
+        await send_pdf(bot, room, chat_id)
         await bot.send_document(chat_id, BufferedInputFile(await export_md(room),
                                                            f"{room.topic.name}.md"))
     elif cmd.sub == "reset":

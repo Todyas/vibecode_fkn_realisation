@@ -178,6 +178,17 @@ async def dev_png(token: str):
     return Response(png, media_type="image/png")
 
 
+@app.get("/api/topics/{token}/canvas.pdf")
+async def canvas_pdf(token: str):
+    room = _room(token)
+    pdf = await snapshot.canvas_pdf(token)
+    if not pdf:
+        raise HTTPException(500, "pdf failed")
+    from fastapi import Response
+    return Response(pdf, media_type="application/pdf", headers={
+        "Content-Disposition": f"inline; filename=canvas-{room.topic.id}.pdf"})
+
+
 @app.get("/api/dev/topics/{token}/compact", response_class=PlainTextResponse)
 async def dev_compact(token: str):
     return render.canvas_compact(_room(token).canvas)
