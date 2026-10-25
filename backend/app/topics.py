@@ -84,6 +84,17 @@ class TopicRoom:
         await self.inbox.put(("job", (fn, fut)))
         return await fut
 
+    def cancel_work(self) -> None:
+        """Оборвать текущую обработку и очередь темы (stop/reset не ждут медленную LLM)."""
+        if self.worker is not None and not self.worker.done():
+            self.worker.cancel()
+        self.worker = None
+        while not self.inbox.empty():
+            kind, item = self.inbox.get_nowait()
+            if kind == "job" and not item[1].done():
+                item[1].cancel()
+        self.pending = []
+
     async def _run(self) -> None:
         from .pipeline import process_batch  # поздний импорт: pipeline зависит от topics
         carry = None

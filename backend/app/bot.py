@@ -140,7 +140,11 @@ def _resolve(reg: Registry, chat_id: int, cmd: commands.Cmd) -> tuple[TopicRoom 
 
 async def send_canvas(bot: Bot, room: TopicRoom, chat_id: int, caption: str,
                       reply_to: int | None = None) -> None:
-    png = await snapshot.canvas_png(room.topic.web_token)
+    try:
+        png = await asyncio.wait_for(snapshot.canvas_png(room.topic.web_token), 20)
+    except Exception:  # noqa: BLE001
+        log.exception("snapshot failed")
+        png = None
     markup = canvas_button(room)
     if png:
         try:
@@ -156,26 +160,49 @@ async def send_canvas(bot: Bot, room: TopicRoom, chat_id: int, caption: str,
                 return
             except TelegramBadRequest:
                 pass
-    await bot.send_message(chat_id, caption, reply_markup=markup,
-                           reply_to_message_id=reply_to, allow_sending_without_reply=True)
+    try:
+        await bot.send_message(chat_id, caption, reply_markup=markup,
+                               reply_to_message_id=reply_to, allow_sending_without_reply=True)
+    except Exception:  # noqa: BLE001
+        log.exception("text fallback failed")
 
 
 async def send_pdf(bot: Bot, room: TopicRoom, chat_id: int) -> None:
-    pdf = await snapshot.canvas_pdf(room.topic.web_token)
-    if pdf:
-        await bot.send_document(chat_id, BufferedInputFile(pdf, f"{room.topic.name}.pdf"))
+    try:
+        pdf = await snapshot.canvas_pdf(room.topic.web_token)
+        if pdf:
+            await bot.send_document(chat_id, BufferedInputFile(pdf, f"{room.topic.name}.pdf"))
+    except Exception:  # noqa: BLE001
+        log.exception("send_pdf failed")
+
+
+STOP_LLM_TIMEOUT_S = 30
+
+
+async def summary_quick(room: TopicRoom) -> str:
+    """Итог с жёстким таймаутом: думающая модель не должна вешать stop/export."""
+    try:
+        return await asyncio.wait_for(pipeline.summarize(room), STOP_LLM_TIMEOUT_S)
+    except Exception as err:  # noqa: BLE001
+        log.warning("summary timeout/fail: %r", err)
+        room.topic.summary = pipeline.fallback_summary(room)
+        return room.topic.summary
 
 
 async def close_topic(room: TopicRoom, reg: Registry) -> str:
-    """stop: отцепить от чата -> дождаться пачек -> Consolidator -> closed -> Summarizer."""
-    reg.detach(room)
+    """stop: отцепить от чата -> оборвать текущую обработку -> Consolidator -> Summarizer -> closed.
 
-    async def job():
-        await pipeline.consolidate(room)
-        summary = await pipeline.summarize(room)
-        await room.set_topic_status("closed")
-        return summary
-    return await room.run_job(job)
+    Не ждём очередь темы: медленная думающая модель раньше вешала stop на минуты."""
+    reg.detach(room)
+    room.cancel_work()
+    try:
+        await asyncio.wait_for(pipeline.consolidate(room), STOP_LLM_TIMEOUT_S)
+    except Exception as err:  # noqa: BLE001
+        log.warning("consolidate on stop skipped: %r", err)
+    summary = await summary_quick(room)
+    await room.set_status("idle")
+    await room.set_topic_status("closed")
+    return summary
 
 
 async def export_md(room: TopicRoom) -> bytes:
@@ -222,22 +249,25 @@ async def handle_command(m: TgMessage, bot: Bot, reg: Registry) -> None:
         if room.topic.status != "open":
             await m.reply(f"Тема «{e(room.topic.name)}» не открыта.")
             return
+        await m.reply(f"Закрываю «{e(room.topic.name)}», собираю итог и картинку…")
         await bot.send_chat_action(chat_id, "upload_photo")
         summary = await close_topic(room, reg)
         caption = f"Тема <b>«{e(room.topic.name)}»</b> закрыта.\n\n{e(summary[:700])}\n\n🗺 {link(room)}"
         await send_canvas(bot, room, chat_id, caption, reply_to=m.message_id)
         await send_pdf(bot, room, chat_id)
     elif cmd.sub == "export":
+        await m.reply(f"Собираю экспорт «{e(room.topic.name)}»…")
         await bot.send_chat_action(chat_id, "upload_photo")
         if room.topic.status == "open" or not room.topic.summary:
-            await room.run_job(lambda: pipeline.summarize(room))
+            await summary_quick(room)
         caption = f"<b>«{e(room.topic.name)}»</b>\n\n{e((room.topic.summary or '')[:700])}\n\n🗺 {link(room)}"
         await send_canvas(bot, room, chat_id, caption, reply_to=m.message_id)
         await send_pdf(bot, room, chat_id)
         await bot.send_document(chat_id, BufferedInputFile(await export_md(room),
                                                            f"{room.topic.name}.md"))
     elif cmd.sub == "reset":
-        await room.run_job(room.reset)
+        room.cancel_work()
+        await room.reset()
         await m.reply(f"Тема «{e(room.topic.name)}» очищена, ссылка та же. 🗺 {link(room)}")
     elif cmd.sub == "ask":
         if not question.strip():

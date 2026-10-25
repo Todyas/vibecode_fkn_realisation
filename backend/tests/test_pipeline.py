@@ -119,3 +119,23 @@ async def test_start_rules():
     b, re = await reg.start(5, "  ОНБОРДИНГ ", "x")
     assert re and b is a and a.topic.status == "open"
     assert reg.find(5, "онб") is a
+
+
+async def test_stop_does_not_hang_on_slow_llm(monkeypatch):
+    from app import bot
+    from app.models import ExtractResult
+
+    async def slow(*a, **k):
+        await asyncio.sleep(3600)
+
+    monkeypatch.setattr(llm, "structured", slow)
+    monkeypatch.setattr(config, "llm_enabled", lambda: True)
+    monkeypatch.setattr(config, "DEBOUNCE_S", 0.01)
+    monkeypatch.setattr(bot, "STOP_LLM_TIMEOUT_S", 0.2)
+    reg = Registry()
+    room, _ = await reg.start(0, "Выезд", "dev")
+    await room.on_message("Бодя", "Выезд в ноябре на 2 дня")
+    await asyncio.sleep(0.1)                       # воркер завис в LLM
+    summary = await asyncio.wait_for(bot.close_topic(room, reg), 2)
+    assert room.topic.status == "closed" and summary
+    assert reg.current(0) is None
