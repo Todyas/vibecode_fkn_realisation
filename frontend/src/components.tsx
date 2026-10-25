@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Toast } from "./store";
 import type { AgentStatus, Canvas, Message, Node, Section, TopicInfo } from "./types";
 import { SECTIONS } from "./types";
+import logo from "./assets/logo.png";
 
 const FLASH_MS = 3000;
 
@@ -227,7 +228,7 @@ export function Header({ topic, agent, online, print }: { topic: TopicInfo; agen
   const date = new Date((closed && topic.closed_at ? topic.closed_at : topic.opened_at) * 1000);
   return (
     <header className="topbar">
-      <div className="brand">/no_idea</div>
+      <img className="brand-logo" src={logo} alt="no idea" />
       <h1 className="topic-name">{topic.name}</h1>
       <span className={`pill ${closed ? "pill-closed" : "pill-open"}`}>{closed ? "тема закрыта" : "тема открыта"}</span>
       <div className="spacer" />

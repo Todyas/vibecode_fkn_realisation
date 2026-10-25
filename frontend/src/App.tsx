@@ -58,7 +58,7 @@ export default function App() {
   // Флаг для Playwright: канвас отрисован
   useEffect(() => {
     if (!state.loaded) return;
-    document.fonts.ready.then(() =>
+    Promise.all([document.fonts.ready, ...[...document.images].map((i) => i.decode().catch(() => {}))]).then(() =>
       requestAnimationFrame(() => requestAnimationFrame(() => { window.__canvasReady = true; })));
   }, [state.loaded]);
 
@@ -119,7 +119,7 @@ export default function App() {
           <NodePopup node={state.canvas.nodes.find((n) => n.id === openNode.id) ?? openNode}
             messages={state.messages} canvas={state.canvas} onClose={() => setOpenNode(null)} />
         )}
-        {print && <footer className="print-foot">/no_idea · {state.canvas.nodes.filter((n) => n.status !== "rejected").length} тезисов · {state.messages.length} сообщений</footer>}
+        {print && <footer className="print-foot">no idea · {state.canvas.nodes.filter((n) => n.status !== "rejected").length} тезисов · {state.messages.length} сообщений</footer>}
       </div>
     </MotionConfig>
   );

@@ -4,8 +4,8 @@
   --ink: #1d1d1f;
   --muted: #6b6b70;
   --line: #e4e1da;
-  --accent: #3b5bdb;
-  --accent-soft: #e7ecff;
+  --accent: #4b70e7;
+  --accent-soft: #e8edfd;
   --red: #e03131;
   --red-soft: #fff0f0;
   --yellow: #f08c00;
@@ -30,7 +30,8 @@ html, body { margin: 0; background: var(--bg); }
   display: flex; align-items: center; gap: 12px; padding: 12px 20px;
   background: var(--panel); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5;
 }
-.brand { font-weight: 700; color: var(--accent); font-family: ui-monospace, Menlo, monospace; }
+.brand-logo { height: 38px; width: auto; display: block; padding-right: 12px; border-right: 1px solid var(--line); }
+.print .brand-logo { height: 46px; }
 .topic-name { margin: 0; font-size: 20px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pill { font-size: 12px; padding: 3px 10px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
 .pill-open { background: #e6f7ea; color: var(--green); }
@@ -113,7 +114,7 @@ html, body { margin: 0; background: var(--bg); }
 .st-rejected { opacity: .55; }
 .st-rejected .node-text { text-decoration: line-through; color: var(--muted); }
 .node.focus { box-shadow: 0 0 0 3px var(--accent); animation: focusPulse 1s 3; }
-@keyframes focusPulse { 50% { box-shadow: 0 0 0 6px rgba(59, 91, 219, .35); } }
+@keyframes focusPulse { 50% { box-shadow: 0 0 0 6px rgba(75, 112, 231, .35); } }
 
 .flash { position: absolute; inset: 0; background: var(--new); pointer-events: none; animation: flash 3s ease-out forwards; border-radius: 8px; z-index: -0; }
 .node > *:not(.flash) { position: relative; }
