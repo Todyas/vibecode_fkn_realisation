@@ -61,3 +61,9 @@ def test_split_role():
     assert split_role("Маркетолог: нужна рассылка", "Bodya") == ("Маркетолог", "нужна рассылка")
     assert split_role("просто текст", "Bodya") == ("Bodya", "просто текст")
     assert split_role("в 10:30 созвон", "Bodya") == ("Bodya", "в 10:30 созвон")
+
+
+def test_extract_json_think():
+    from app.llm import extract_json
+    assert extract_json('<think>хм {"a":0}</think>\n```json\n{"a": 1}\n```') == '{"a": 1}'
+    assert extract_json('Вот ответ: {"a": 2} готово') == '{"a": 2}'

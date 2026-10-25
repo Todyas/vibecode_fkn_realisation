@@ -22,10 +22,11 @@ PORT = int(os.getenv("PORT", "8000"))
 
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://openrouter.ai/api/v1")
 LLM_API_KEY = os.getenv("LLM_API_KEY", "")
-FAST_MODEL = os.getenv("FAST_MODEL", "anthropic/claude-haiku-5.5")
-STRONG_MODEL = os.getenv("STRONG_MODEL", "anthropic/claude-sonnet-5.5")
+FAST_MODEL = os.getenv("FAST_MODEL", "qwen/qwen3-235b-a22b-2507")
+STRONG_MODEL = os.getenv("STRONG_MODEL", "deepseek/deepseek-r1-0528")
 FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", "")
-LLM_TIMEOUT = _f("LLM_TIMEOUT", 30)
+LLM_TIMEOUT = _f("LLM_TIMEOUT", 90)          # думающие модели отвечают долго
+LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "12000"))  # с запасом под рассуждения
 # auto | json_schema | prompt — как просить JSON у провайдера
 LLM_JSON_MODE = os.getenv("LLM_JSON_MODE", "auto")
 CACHE_MODE = os.getenv("CACHE_MODE", "off")  # off | record | replay

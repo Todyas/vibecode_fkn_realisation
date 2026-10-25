@@ -7,6 +7,7 @@
 4. **Код:** `git pull`, в корне `cp .env.example .env`, заполнить:
    `TG_BOT_TOKEN=...`, `LLM_BASE_URL`, `LLM_API_KEY`, `FAST_MODEL`, `STRONG_MODEL`.
    Ключ Anthropic напрямую: `LLM_BASE_URL=https://api.anthropic.com/v1/`, модели `claude-haiku-5-5` / `claude-sonnet-5-5`.
+   По умолчанию (OpenRouter): `FAST_MODEL=qwen/qwen3-235b-a22b-2507`, `STRONG_MODEL=deepseek/deepseek-r1-0528`.
    Через OpenRouter: `https://openrouter.ai/api/v1`, модели `anthropic/claude-haiku-5.5` / `anthropic/claude-sonnet-5.5`.
 5. **Запуск:** `cd backend && python3 -m venv .venv && . .venv/bin/activate &&
    pip install -r requirements.txt && playwright install chromium && python -m app`.

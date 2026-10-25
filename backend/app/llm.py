@@ -38,6 +38,9 @@ def _schema_hint(schema: type[BaseModel]) -> str:
 
 
 def extract_json(raw: str) -> str:
+    raw = re.sub(r"<think>.*?</think>", "", raw, flags=re.S)   # рассуждения DeepSeek/Qwen
+    if "<think>" in raw:                                        # оборванное рассуждение
+        raw = raw.split("</think>")[-1]
     raw = raw.strip()
     m = re.search(r"```(?:json)?\s*(.*?)```", raw, re.S)
     if m:
@@ -75,13 +78,13 @@ async def _call(model: str, messages: list, schema: type[BaseModel]):
             "name": schema.__name__, "schema": schema.model_json_schema()}}
     try:
         return await client().chat.completions.create(
-            model=model, messages=messages, temperature=0.1, max_tokens=4000, **kwargs)
+            model=model, messages=messages, temperature=0.1, max_tokens=config.LLM_MAX_TOKENS, **kwargs)
     except BadRequestError as e:
         if kwargs and _json_mode == "auto":
             log.warning("provider rejected json_schema (%s), switching to prompt mode", e)
             _json_mode = "prompt"
             return await client().chat.completions.create(
-                model=model, messages=messages, temperature=0.1, max_tokens=4000)
+                model=model, messages=messages, temperature=0.1, max_tokens=config.LLM_MAX_TOKENS)
         raise
 
 
