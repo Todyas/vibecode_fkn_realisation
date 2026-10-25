@@ -1,6 +1,6 @@
-# Вайбкодинг ФКН (VibeHack)
+# Вайбкодинг ФКН (VibeHack) — Команда «no idea»
 
-Репозиторий команды для участия в однодневном очном хакатоне **Вайбкодинг ФКН (VibeHack)** по созданию цифровых продуктов с помощью искусственного интеллекта.
+Репозиторий команды **«no idea»** для участия в однодневном очном хакатоне **Вайбкодинг ФКН (VibeHack)** по созданию цифровых продуктов с помощью искусственного интеллекта.
 
 ---
 
@@ -10,8 +10,8 @@
 | :--- | :--- | :--- | :--- | :---: |
 | **Ева** | Project Manager | Координация команды, контроль дедлайнов, управление бэклогом, фасилитация | [@doubleskvish](https://github.com/doubleskvish) | ✅ Добавлена |
 | **Арина** | Designer | Проектирование UI/UX, дизайн экранов, подготовка графических ассетов и презентации | [@vsekapec](https://github.com/vsekapec) | ✅ Добавлена |
-| **Александр** | Fullstack Developer | Разработка архитектуры, бэкенда, фронтенда и интеграция сервисов | [@shiyanalex](https://github.com/shiyanalex) | ⏳ Ожидает принятия инвайта |
-| **Богдан** | ML Engineer | Выбор и интеграция ML/LLM-моделей, промпт-стратегия, пайплайны данных | [@todyas](https://github.com/todyas) | ⏳ Ожидает принятия инвайта |
+| **Александр** | Fullstack Developer | Разработка архитектуры, бэкенда, фронтенда и интеграция сервисов | [@shiyanalex](https://github.com/shiyanalex) | ✅ Добавлен |
+| **Богдан** | ML Engineer | Выбор и интеграция ML/LLM-моделей, промпт-стратегия, пайплайны данных | [@todyas](https://github.com/todyas) | ✅ Добавлен |
 | **Александр** | Tester / Speaker | Тестирование продукта, проверка пользовательских сценариев, подготовка и проведение финального питча | [@MVRto01](https://github.com/MVRto01) | ⏳ Ожидает принятия инвайта |
 
 ---
@@ -108,11 +108,22 @@
 
 ---
 
-## 📋 Актуальная задача (GitHub Issues)
+## 📋 Задачи команды на разработку до 17:30 (GitHub Issues)
 
-В репозитории зафиксирована единая стартовая задача для команды:
+Все задачи распределены по ролям в [GitHub Issues](https://github.com/doubleskvish/vibecode-fkn/issues):
 
-- [ ] **[Issue #1](https://github.com/doubleskvish/vibecode-fkn/issues/1)**: `[Старт и Шаг 1] Открытие хакатона, фиксация темы/критериев и выбор концепции MVP`
-  - *Ответственные в GitHub:* [@doubleskvish](https://github.com/doubleskvish), [@vsekapec](https://github.com/vsekapec) *(после принятия инвайтов также: [@shiyanalex](https://github.com/shiyanalex), [@todyas](https://github.com/todyas), [@MVRto01](https://github.com/MVRto01))*
+- [ ] **[Issue #11: Frontend](https://github.com/doubleskvish/vibecode-fkn/issues/11)**: `[Frontend] Разработка Split-View интерфейса: Telegram-чат и живая доска карточек`
+  - *Ответственный:* [@shiyanalex](https://github.com/shiyanalex) (Fullstack)
+- [ ] **[Issue #12: ML / Backend](https://github.com/doubleskvish/vibecode-fkn/issues/12)**: `[ML / Backend] Реализация API эндпоинта и системного промпта AI-фасилитатора`
+  - *Ответственный:* [@todyas](https://github.com/todyas) (ML)
+- [ ] **[Issue #13: Design](https://github.com/doubleskvish/vibecode-fkn/issues/13)**: `[Design] UI-кит карточек живой доски, стили чата и презентация`
+  - *Ответственный:* [@vsekapec](https://github.com/vsekapec) (Designer)
+- [ ] **[Issue #14: QA & Pitch](https://github.com/doubleskvish/vibecode-fkn/issues/14)**: `[QA & Pitch] Сценарий живой демонстрации, сквозное тестирование и репетиция питча`
+  - *Ответственные:* Александр ([@MVRto01](https://github.com/MVRto01)), Ева ([@doubleskvish](https://github.com/doubleskvish))
+- [ ] **[Issue #15: PM & Docs](https://github.com/doubleskvish/vibecode-fkn/issues/15)**: `[PM & Docs] Ведение AI Engineering Strategy и контроль дедлайна 17:30`
+  - *Ответственный:* [@doubleskvish](https://github.com/doubleskvish) (PM)
 
-*(Задачи под конкретную реализацию будут сформированы на Шагах 2–5 после того, как в 10:30 станут известны темы).*
+---
+
+### Архивные задачи:
+- [x] **[Issue #1](https://github.com/doubleskvish/vibecode-fkn/issues/1)**: `[Завершено] Чек-пойнт №1: Тема 3 («Второй мозг»), команда «no idea»` ✅ Сдано до 13:00
