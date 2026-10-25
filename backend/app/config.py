@@ -16,7 +16,10 @@ def _f(name: str, default: float) -> float:
 
 
 TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN", "")
-PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000").rstrip("/")
+_railway = os.getenv("RAILWAY_PUBLIC_DOMAIN")  # Railway подставляет сам
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL") or (
+    f"https://{_railway}" if _railway else "http://localhost:8000")
+PUBLIC_BASE_URL = PUBLIC_BASE_URL.rstrip("/")
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8000"))
 

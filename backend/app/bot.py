@@ -1,10 +1,12 @@
 """Telegram-бот: роутер команд /no_idea, приём сообщений, отправка фото/файлов, cooldown."""
 import asyncio
+import html
 import logging
 import re
 import time
 
 from aiogram import Bot, Dispatcher, F, Router
+from aiogram.client.default import DefaultBotProperties
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError, TelegramRetryAfter
 from aiogram.types import (BotCommand, BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup,
                            Message as TgMessage)
@@ -53,9 +55,22 @@ def canvas_button(room: TopicRoom, node_id: str | None = None) -> InlineKeyboard
         InlineKeyboardButton(text="Показать на канвасе", url=url)]])
 
 
-def _link_suffix(room: TopicRoom, node_id: str | None = None) -> str:
+def e(text: str | None) -> str:
+    return html.escape(text or "", quote=False)
+
+
+def link(room: TopicRoom, node_id: str | None = None, label: str = "Открыть канвас") -> str:
+    """HTML-ссылка на канвас; localhost Telegram не делает ссылкой, тогда адрес текстом."""
     url = config.canvas_url(room.topic.web_token, node_id)
-    return "" if url.startswith("https://") else f"\n{url}"
+    if url.startswith("https://"):
+        return f'<a href="{html.escape(url)}">{label}</a>'
+    return f"{label}: {e(url)}"
+
+
+def _link_suffix(room: TopicRoom, node_id: str | None = None) -> str:
+    """Под сообщением бота: кнопка, если https; иначе ссылка текстом."""
+    url = config.canvas_url(room.topic.web_token, node_id)
+    return "" if url.startswith("https://") else "\n\n" + link(room, node_id, "Показать на канвасе")
 
 
 class TelegramNotifier:
@@ -90,7 +105,7 @@ class TelegramNotifier:
             kwargs["reply_to_message_id"] = reply_to_tg
             kwargs["allow_sending_without_reply"] = True
         msg = await self._send(lambda: self.bot.send_message(
-            chat_id, text + _link_suffix(room, node), **kwargs))
+            chat_id, e(text) + _link_suffix(room, node), **kwargs))
         if msg is None:
             return None
         cs.last_bot_message_ts = now
@@ -103,7 +118,7 @@ def _topics_list(reg: Registry, chat_id: int) -> str:
     rooms = reg.topics_of(chat_id)
     if not rooms:
         return "В этом чате ещё нет тем. Начни: /no_idea start <имя>"
-    lines = [f"{'🟢' if r.topic.status == 'open' else '⚪️'} {r.topic.name} — {r.url}" for r in rooms]
+    lines = [f"{'🟢' if r.topic.status == 'open' else '⚪️'} {link(r, label=e(r.topic.name))}" for r in rooms]
     return "Темы чата:\n" + "\n".join(lines)
 
 
@@ -126,7 +141,6 @@ def _resolve(reg: Registry, chat_id: int, cmd: commands.Cmd) -> tuple[TopicRoom 
 async def send_canvas(bot: Bot, room: TopicRoom, chat_id: int, caption: str,
                       reply_to: int | None = None) -> None:
     png = await snapshot.canvas_png(room.topic.web_token)
-    caption = caption[:1000]
     markup = canvas_button(room)
     if png:
         try:
@@ -167,11 +181,11 @@ async def handle_command(m: TgMessage, bot: Bot, reg: Registry) -> None:
     chat_id = m.chat.id
     if cmd.sub == "help":
         cur = reg.current(chat_id)
-        tail = f"\n\nСейчас слушаю: «{cur.topic.name}» — {cur.url}" if cur else "\n\nСейчас тема не открыта."
-        await m.reply(HELP + tail, disable_web_page_preview=True)
+        tail = f"\n\nСейчас слушаю: «{e(cur.topic.name)}» · {link(cur)}" if cur else "\n\nСейчас тема не открыта."
+        await m.reply(e(HELP) + tail)
         return
     if cmd.sub == "list":
-        await m.reply(_topics_list(reg, chat_id), disable_web_page_preview=True)
+        await m.reply(_topics_list(reg, chat_id))
         return
     if cmd.sub == "start":
         name = cmd.raw_args if not cmd.quoted else cmd.name
@@ -180,48 +194,46 @@ async def handle_command(m: TgMessage, bot: Bot, reg: Registry) -> None:
             return
         try:
             room, reopened = await reg.start(chat_id, name, author_name(m))
-        except TopicError as e:
-            await m.reply(str(e))
+        except TopicError as err:
+            await m.reply(html.escape(str(err), quote=False))
             return
         verb = "Снова слушаю" if reopened else "Слушаю"
-        await m.reply(f"{verb} тему «{room.topic.name}». Канвас: {room.url}",
+        await m.reply(f"{verb} тему <b>«{e(room.topic.name)}»</b>. Пишите как обычно — я соберу тезисы.\n\n"
+                      f"🗺 {link(room)}",
                       reply_markup=canvas_button(room), disable_web_page_preview=True)
         return
 
     room, question = _resolve(reg, chat_id, cmd)
     if room is None:
         if cmd.name or cmd.sub == "ask":
-            await m.reply("Не нашёл такую тему.\n\n" + _topics_list(reg, chat_id),
-                          disable_web_page_preview=True)
+            await m.reply("Не нашёл такую тему.\n\n" + _topics_list(reg, chat_id))
         else:
             await m.reply("Сейчас тема не открыта. Укажи имя: /no_idea "
-                          f"{cmd.sub} <имя>\n\n" + _topics_list(reg, chat_id),
-                          disable_web_page_preview=True)
+                          f"{cmd.sub} &lt;имя&gt;\n\n" + _topics_list(reg, chat_id))
         return
 
     if cmd.sub == "stop":
         if room.topic.status != "open":
-            await m.reply(f"Тема «{room.topic.name}» не открыта.")
+            await m.reply(f"Тема «{e(room.topic.name)}» не открыта.")
             return
         await bot.send_chat_action(chat_id, "upload_photo")
         summary = await close_topic(room, reg)
-        caption = f"Тема «{room.topic.name}» закрыта.\n\n{summary}\n\nКанвас: {room.url}"
+        caption = f"Тема <b>«{e(room.topic.name)}»</b> закрыта.\n\n{e(summary[:700])}\n\n🗺 {link(room)}"
         await send_canvas(bot, room, chat_id, caption, reply_to=m.message_id)
     elif cmd.sub == "export":
         await bot.send_chat_action(chat_id, "upload_photo")
         if room.topic.status == "open" or not room.topic.summary:
             await room.run_job(lambda: pipeline.summarize(room))
-        caption = f"«{room.topic.name}»\n\n{room.topic.summary or ''}\n\nКанвас: {room.url}"
+        caption = f"<b>«{e(room.topic.name)}»</b>\n\n{e((room.topic.summary or '')[:700])}\n\n🗺 {link(room)}"
         await send_canvas(bot, room, chat_id, caption, reply_to=m.message_id)
         await bot.send_document(chat_id, BufferedInputFile(await export_md(room),
                                                            f"{room.topic.name}.md"))
     elif cmd.sub == "reset":
         await room.run_job(room.reset)
-        await m.reply(f"Тема «{room.topic.name}» очищена, ссылка та же: {room.url}",
-                      disable_web_page_preview=True)
+        await m.reply(f"Тема «{e(room.topic.name)}» очищена, ссылка та же. 🗺 {link(room)}")
     elif cmd.sub == "ask":
         if not question.strip():
-            await m.reply("Что спросить? /no_idea ask <имя> <вопрос>")
+            await m.reply("Что спросить? /no_idea ask &lt;имя&gt; &lt;вопрос&gt;")
             return
         await answer_question(m, room, question)
 
@@ -230,8 +242,7 @@ async def answer_question(m: TgMessage, room: TopicRoom, question: str) -> None:
     await m.bot.send_chat_action(m.chat.id, "typing")
     res = await pipeline.answer(room, question)
     node = res.node_ids[0] if res.node_ids else None
-    sent = await m.reply(res.answer + _link_suffix(room, node), reply_markup=canvas_button(room, node),
-                         disable_web_page_preview=True)
+    sent = await m.reply(e(res.answer) + _link_suffix(room, node), reply_markup=canvas_button(room, node))
     room.remember_bot_msg(sent.message_id, None)
 
 
@@ -254,7 +265,7 @@ def setup(registry: Registry) -> Router:
         if m.text and re.match(r"^/(start|help)(@\w+)?(\s|$)", m.text):
             addressed = re.match(r"^/\w+@(\w+)", m.text)
             if m.chat.type == "private" or (addressed and addressed.group(1).lower() == me.username.lower()):
-                await m.reply(HELP, disable_web_page_preview=True)
+                await m.reply(e(HELP))
             return
         if text.startswith("/"):
             return                                    # чужие команды
@@ -287,7 +298,8 @@ def setup(registry: Registry) -> Router:
 
 
 async def run_polling(registry: Registry) -> None:
-    bot = Bot(config.TG_BOT_TOKEN)
+    bot = Bot(config.TG_BOT_TOKEN, default=DefaultBotProperties(
+        parse_mode="HTML", link_preview_is_disabled=True))
     dp = Dispatcher()
     dp.include_router(setup(registry))
     registry.notifier = TelegramNotifier(bot, registry)
