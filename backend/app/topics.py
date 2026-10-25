@@ -169,6 +169,17 @@ class TopicRoom:
         self.bot_msgs[tg_id] = conflict_id
         journal.append(self.topic.id, "bot_msg", {"tg": tg_id, "conflict": conflict_id})
 
+    async def reset(self) -> None:
+        """Очистить тему перед демо: сообщения, канвас, состояние триггеров."""
+        from .models import Canvas
+        t = self.topic
+        t.messages, t.canvas, t.counters, t.summary = [], Canvas(), {}, None
+        self.by_tg, self.bot_msgs, self.pending, self.done_keys = {}, {}, [], set()
+        self.human_since_consolidate = 0
+        journal.append(t.id, "reset", {})
+        journal.write_meta(t)
+        await self.broadcast({"type": "snapshot", **self.snapshot()})
+
     async def set_topic_status(self, status: str) -> None:
         self.topic.status = status
         if status == "closed":

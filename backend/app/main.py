@@ -10,8 +10,7 @@ from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import config, journal, llm, render, snapshot
-from .models import Canvas
+from . import config, llm, render, snapshot
 from .topics import TopicRoom, registry
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -153,14 +152,7 @@ async def dev_topic(req: DevTopicReq):
 @app.post("/api/dev/topics/{token}/reset")
 async def dev_reset(token: str):
     room = _room(token)
-    room.topic.messages, room.topic.canvas, room.topic.counters = [], Canvas(), {}
-    room.topic.summary = None
-    room.by_tg, room.bot_msgs, room.pending, room.done_keys = {}, {}, [], set()
-    room.human_since_consolidate = 0
-    journal.append(room.topic.id, "reset", {})
-    journal.write_meta(room.topic)
-    await room.set_topic_status("open")
-    await room.broadcast({"type": "snapshot", **room.snapshot()})
+    await room.run_job(room.reset)
     return {"ok": True}
 
 

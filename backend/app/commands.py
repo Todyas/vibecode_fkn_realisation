@@ -2,7 +2,7 @@
 import re
 from dataclasses import dataclass
 
-SUBCOMMANDS = {"start", "stop", "export", "ask", "list", "help"}
+SUBCOMMANDS = {"start", "stop", "export", "ask", "list", "help", "reset"}
 QUOTES = {'"': '"', "«": "»", "“": "”", "„": "“", "'": "'"}
 CMD_RE = re.compile(r"^/no_idea(?:@(\w+))?(?=\s|$)", re.IGNORECASE)
 

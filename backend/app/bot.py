@@ -214,6 +214,10 @@ async def handle_command(m: TgMessage, bot: Bot, reg: Registry) -> None:
         await send_canvas(bot, room, chat_id, caption, reply_to=m.message_id)
         await bot.send_document(chat_id, BufferedInputFile(await export_md(room),
                                                            f"{room.topic.name}.md"))
+    elif cmd.sub == "reset":
+        await room.run_job(room.reset)
+        await m.reply(f"Тема «{room.topic.name}» очищена, ссылка та же: {room.url}",
+                      disable_web_page_preview=True)
     elif cmd.sub == "ask":
         if not question.strip():
             await m.reply("Что спросить? /no_idea ask <имя> <вопрос>")
