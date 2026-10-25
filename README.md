@@ -124,35 +124,35 @@
 > 🎯 **Контрольная точка к 15:30 (из техдока):**  
 > *«Сценарий демо из 8 реплик проходит от начала до конца на живых моделях, доска обновляется, пусть пока некрасиво».*
 
-### Задачи спринта по ролям в GitHub Issues:
+### Детализированные микрозадачи спринта по ролям:
 
-1. **[Issue #11: Frontend](https://github.com/doubleskvish/vibecode-fkn/issues/11)**: `[Frontend] Спринт 1: Каркас React+Vite, WebSocket-шлюз и прием patch-событий`
-   - **Ответственный:** [@shiyanalex](https://github.com/shiyanalex) (Fullstack)
-   - *14:30:* React+Vite проект и подключение WebSocket;
-   - *15:00:* `main.py` + `rooms.py` с mock-патчами, чтобы фронт не ждал ML;
-   - *15:30:* Чат слева + базовая отрисовка карточек справа + кнопки ✅/❌ для голосования.
-2. **[Issue #12: ML / Backend](https://github.com/doubleskvish/vibecode-fkn/issues/12)**: `[ML / Backend] Спринт 1: models.py, Extractor, Reducer и первый прогон demo_shop`
-   - **Ответственный:** [@todyas](https://github.com/todyas) (ML)
-   - *14:25:* `models.py` (RoomState, patch ops) + `llm.py` (Structured output, sha256-кэш);
-   - *14:50:* `prompts/extractor.md` + `reducer.py` (извлечение карточек P, C, G);
-   - *15:15:* `triggers.py` + `prompts/mediator.md` (синтез `same_goal`, фиксация `conflict`);
-   - *15:30:* Успешный прогон 8 реплик из `demo_script.md` через пайплайн.
-3. **[Issue #13: Design](https://github.com/doubleskvish/vibecode-fkn/issues/13)**: `[Design] Спринт 1: Дизайн-токены карточек, рёбер связей и черновик слайдов`
-   - **Ответственная:** [@vsekapec](https://github.com/vsekapec) (Designer)
-   - *14:35:* Цвета карточек (G, P, C, D) и рёбер (зеленое/красное) — передать Александру;
-   - *15:00:* Состояния карточек (новая, в решении, `needs_review`);
-   - *15:30:* Черновик слайдов презентации в Figma.
-4. **[Issue #14: QA & Pitch](https://github.com/doubleskvish/vibecode-fkn/issues/14)**: `[QA & Pitch] Спринт 1: demo_shop.json (8 реплик), первые eval-тесты и тайминг питча`
-   - **Ответственные:** Александр ([@MVRto01](https://github.com/MVRto01)), Ева ([@doubleskvish](https://github.com/doubleskvish))
-   - *14:30:* Сформировать `scenarios/demo_shop.json` с 8 точными репликами;
-   - *15:00:* Первые 6–8 eval-тестов в `scenarios/eval_*.json`;
-   - *15:30:* Черновая структура питча на 3.5 минуты.
-5. **[Issue #15: PM & Docs](https://github.com/doubleskvish/vibecode-fkn/issues/15)**: `[PM & Docs] Спринт 1: Контроль точки 15:30, координация связки и AI-лог`
-   - **Ответственная:** [@doubleskvish](https://github.com/doubleskvish) (PM)
-   - *14:00:* Синхронизация старта;
-   - *14:45:* Чек готовности моделей и каркаса;
-   - *15:15:* Логирование AI-инструментов в [AI_ENGINEERING_STRATEGY.md](AI_ENGINEERING_STRATEGY.md);
-   - *15:30:* Чек прогона сквозного демо-сценария.
+#### 1. [Issue #11: Frontend](https://github.com/doubleskvish/vibecode-fkn/issues/11) — Александр ([@shiyanalex](https://github.com/shiyanalex))
+- [ ] **14:00–14:30:** Развернуть `frontend/` (React + Vite + Tailwind), настроить Split View лейаут (35% чат, 65% доска, высота `100vh`).
+- [ ] **14:30–15:00:** Написать WebSocket-клиент (`useWebSocket`), поднять базовый сервер/mock на FastAPI (`main.py` + `rooms.py`), принимающий сообщения и отдающий тестовые патчи.
+- [ ] **15:00–15:15:** Собрать компоненты чата: лента сообщений с бейджами ролей, поле ввода, индикатор `agent_status: thinking`.
+- [ ] **15:15–15:30:** Собрать компоненты доски: колонки карточек (G, P, C, D), карточку решения с кнопками голосования ✅ / ❌.
+
+#### 2. [Issue #12: ML / Backend](https://github.com/doubleskvish/vibecode-fkn/issues/12) — Богдан ([@todyas](https://github.com/todyas))
+- [ ] **14:00–14:25:** Создать `models.py` (Pydantic-схемы `RoomState`, `Item`, `Decision`, `patch ops`) и `llm.py` (Structured output, sha256-кэш).
+- [ ] **14:25–14:50:** Написать `prompts/extractor.md` и `reducer.py` (классификация сообщений, дедупликация, groupby по `goal_id`, выдача ID).
+- [ ] **14:50–15:15:** Создать `triggers.py` (trigger policy) и `prompts/mediator.md` (синтез решения, вопрос о приоритете при конфликте, guards).
+- [ ] **15:15–15:30:** Собрать `pipeline.py` и провести первый сквозной тест 8 реплик из `demo_script.md` на живой модели.
+
+#### 3. [Issue #13: Design](https://github.com/doubleskvish/vibecode-fkn/issues/13) — Арина ([@vsekapec](https://github.com/vsekapec))
+- [ ] **14:00–14:35:** Зафиксировать цвета типов карточек (G, P, C, D) и рёбер (зеленое/красное) — передать CSS/Tailwind классы Александру.
+- [ ] **14:35–15:05:** Спроектировать состояния карточек (новая, в решении, `needs_review` — красный бордер ⚠️) и карточку согласования с кнопками голосования.
+- [ ] **15:05–15:30:** Собрать в Figma черновик слайдов презентации (Титул, Проблема, Схема решения, Архитектура, ИИ, Команда).
+
+#### 4. [Issue #14: QA & Pitch](https://github.com/doubleskvish/vibecode-fkn/issues/14) — Александр ([@MVRto01](https://github.com/MVRto01)) + Ева ([@doubleskvish](https://github.com/doubleskvish))
+- [ ] **14:00–14:30:** Сформировать файл `scenarios/demo_shop.json` с 8 точными репликами из [`docs/project_materials/demo_script.md`](docs/project_materials/demo_script.md).
+- [ ] **14:30–15:05:** Составить 6–8 тестовых сценариев `scenarios/eval_*.json` для тестирования логики промптов Богдана.
+- [ ] **15:05–15:30:** Набросать посекундный план питча спикера на 3.5 минуты (Проблема 15с -> Демо 2 мин -> Архитектура 40с -> ИИ 20с -> Финал 15с).
+
+#### 5. [Issue #15: PM & Docs](https://github.com/doubleskvish/vibecode-fkn/issues/15) — Ева ([@doubleskvish](https://github.com/doubleskvish))
+- [ ] **14:00:** Синхронизация старта спринта, распределение контрольных дедлайнов.
+- [ ] **14:45:** Промежуточный контроль: проверить наличие `models.py` у Богдана и WebSocket-каркаса у Александра.
+- [ ] **15:15:** Зафиксировать используемые AI-инструменты команды в [AI_ENGINEERING_STRATEGY.md](AI_ENGINEERING_STRATEGY.md).
+- [ ] **15:30:** Проконтролировать прохождение первого сквозного теста демо-сценария.
 
 ---
 
