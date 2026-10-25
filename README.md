@@ -119,42 +119,36 @@
 
 ---
 
-## 📋 Спринт №1: «Первая связка и живой пайплайн» (13:25 – 15:00 / 15:30)
+---
 
-> 🎯 **Контрольная точка (из техдока):**  
-> *«Сценарий демо из 8 реплик проходит от начала до конца на живых моделях, доска обновляется, пусть пока некрасиво».*
+## 📋 Текущие задачи и статус реализации
 
-### Детализированные микрозадачи спринта по ролям (в работе с 13:25):
+> 🎯 **Контрольная точка:** Сдача Чек-пойнта №2 (дедлайн 16:00) и сквозной прогон Telegram-бота с живым канвасом.
 
-#### 1. [Issue #11: Frontend](https://github.com/doubleskvish/vibecode-fkn/issues/11) — Александр ([@shiyanalex](https://github.com/shiyanalex))
-- [ ] **13:25–13:55:** Развернуть `frontend/` (React + Vite + Tailwind), настроить Split View лейаут (35% чат, 65% доска, высота `100vh`).
-- [ ] **13:55–14:25:** Написать WebSocket-клиент (`useWebSocket`), поднять базовый сервер/mock на FastAPI (`main.py` + `rooms.py`), принимающий сообщения и отдающий тестовые патчи.
-- [ ] **14:25–14:45:** Собрать компоненты чата: лента сообщений с бейджами ролей, поле ввода, индикатор `agent_status: thinking`.
-- [ ] **14:45–15:00:** Собрать компоненты доски: колонки карточек (G, P, C, D), карточку решения с кнопками голосования ✅ / ❌.
+### Статус задач по направлениям:
 
-#### 2. [Issue #12: ML / Backend](https://github.com/doubleskvish/vibecode-fkn/issues/12) — Богдан ([@todyas](https://github.com/todyas))
-- [ ] **13:25–13:55:** Создать `models.py` (Pydantic-схемы `RoomState`, `Item`, `Decision`, `patch ops`) и `llm.py` (Structured output, sha256-кэш).
-- [ ] **13:55–14:25:** Написать `prompts/extractor.md` и `reducer.py` (классификация сообщений, дедупликация, groupby по `goal_id`, выдача ID).
-- [ ] **14:25–14:45:** Создать `triggers.py` (trigger policy) и `prompts/mediator.md` (синтез решения, вопрос о приоритете при конфликте, guards).
-- [ ] **14:45–15:00:** Собрать `pipeline.py` и провести первый сквозной тест 8 реплик из `demo_script.md` на живой модели.
+#### 1. [Issue #12: ML / Backend](https://github.com/doubleskvish/vibecode-fkn/issues/12) — Богдан ([@todyas](https://github.com/todyas)) + Александр ([@shiyanalex](https://github.com/shiyanalex))
+- [x] Pydantic-модели (`Topic`, `Canvas`, `Node`, `Conflict`, `ChatState`) и Patch-операции зафиксированы в [data_models.md](docs/project_materials/data_models.md).
+- [x] Базовый Telegram-бот (`bot.py`) с асинхронным вызовом OpenRouter выложен в репозиторий.
+- [ ] Оформление `backend/app/models.py` и `llm.py` (Structured Outputs, sha256-кэш для детерминированного демо).
+- [ ] Экстрактор (`prompts/extractor.md`) и редьюсер (`reducer.py`) с раскладкой по 7 блокам канваса.
+- [ ] Политика триггеров и медиатор (`triggers.py`, `prompts/mediator.md`) — реплаи в Telegram при конфликтах.
 
-#### 3. [Issue #13: Design](https://github.com/doubleskvish/vibecode-fkn/issues/13) — Арина ([@vsekapec](https://github.com/vsekapec))
-- [ ] **13:25–13:55:** Зафиксировать цвета типов карточек (G, P, C, D) и рёбер (зеленое/красное) — передать CSS/Tailwind классы Александру.
-- [ ] **13:55–14:30:** Спроектировать состояния карточек (новая, в решении, `needs_review` — красный бордер ⚠️) и карточку согласования с кнопками голосования.
-- [ ] **14:30–15:00:** Собрать в Figma черновик слайдов презентации (Титул, Проблема, Схема решения, Архитектура, ИИ, Команда).
+#### 2. [Issue #13: Design](https://github.com/doubleskvish/vibecode-fkn/issues/13) — Арина ([@vsekapec](https://github.com/vsekapec))
+- [x] Разработан UI/UX дизайн живого канваса: 7 блоков, состояния карточек (`new`, `active`, `disputed`, `needs_review`).
+- [x] Дизайн передан разработчикам.
+- [ ] Подбор шаблона презентации к защите (в процессе).
+- [ ] Оформление финальных слайдов презентации.
 
-#### 4. [Issue #14: QA & Pitch](https://github.com/doubleskvish/vibecode-fkn/issues/14) — Александр ([@MVRto01](https://github.com/MVRto01)) + Ева ([@doubleskvish](https://github.com/doubleskvish))
-- [ ] **13:25–13:55:** Сформировать файл `scenarios/demo_shop.json` с 8 точными репликами из [`docs/project_materials/demo_script.md`](docs/project_materials/demo_script.md).
-- [ ] **13:55–14:30:** Составить 6–8 тестовых сценариев `scenarios/eval_*.json` для тестирования логики промптов Богдана.
-- [ ] **14:30–15:00:** Набросать посекундный план питча спикера на 3.5 минуты (Проблема 15с -> Демо 2 мин -> Архитектура 40с -> ИИ 20с -> Финал 15с).
-
-#### 5. [Issue #15: PM & Docs](https://github.com/doubleskvish/vibecode-fkn/issues/15) — Ева ([@doubleskvish](https://github.com/doubleskvish))
-- [ ] **13:25:** Координация текущего спринта и раздача микрозадач.
-- [ ] **14:15:** Промежуточный контроль: проверить наличие `models.py` у Богдана и WebSocket-каркаса у Александра.
-- [ ] **14:45:** Зафиксировать используемые AI-инструменты команды в [AI_ENGINEERING_STRATEGY.md](AI_ENGINEERING_STRATEGY.md).
-- [ ] **15:00–15:30:** Проконтролировать прохождение первого сквозного теста демо-сценария.
+#### 3. [Issue #14: QA & Pitch](https://github.com/doubleskvish/vibecode-fkn/issues/14) — Александр ([@MVRto01](https://github.com/MVRto01)) + Ева ([@doubleskvish](https://github.com/doubleskvish))
+- [x] Тестовые диалоги подготовлены.
+- [x] Александр (спикер) подготовил форму анализа востребованности решения (CustDev / market fit).
+- [x] Канонический 9-шаговый сценарий зафиксирован в [demo_script.md](docs/project_materials/demo_script.md).
+- [ ] Финализация тезисного плана питча спикера под регламент защиты.
 
 ---
 
-### Архивные задачи:
-- [x] **[Issue #1](https://github.com/doubleskvish/vibecode-fkn/issues/1)**: `[Завершено] Чек-пойнт №1: Тема 3 («Второй мозг»), команда «no idea»` ✅ Сдано до 13:00
+### Завершенные и закрытые задачи:
+- [x] **[Issue #1](https://github.com/doubleskvish/vibecode-fkn/issues/1)**: `[Завершено] Чек-пойнт №1: Тема 3 («Второй мозг»), команда «no idea»` ✅ Сдано до 13:00.
+- [x] **[Issue #15](https://github.com/doubleskvish/vibecode-fkn/issues/15)**: `[PM & Docs] Спринт 1: Контроль точки 15:00, координация связки и AI-лог` ✅ Завершен.
+- [x] **[Issue #11](https://github.com/doubleskvish/vibecode-fkn/issues/11)**: `[Frontend] Спринт 1: Каркас React+Vite Split View` ⛔ Закрыто (неактуально: концепция веб-чата заменена на Telegram-бота).

@@ -24,4 +24,5 @@
    - Работа в команде — 10%
    - Использование ИИ — 10%
 5. **Официальные ссылки:**
-   - Чек-пойнт №1: Google-форма `https://forms.gle/tYm2p6DV3odjbutr9` (дедлайн 13:00).
+   - Чек-пойнт №1: Google-форма `https://forms.gle/tYm2p6DV3odjbutr9` (дедлайн 13:00, сдан).
+   - Чек-пойнт №2: Google-форма `https://forms.gle/jsguWLZpbvcATcth8` (дедлайн 16:00).
