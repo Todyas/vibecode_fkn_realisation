@@ -35,6 +35,8 @@ BOT_COOLDOWN_S = _f("BOT_COOLDOWN_S", 60)
 CONSOLIDATE_EVERY = int(os.getenv("CONSOLIDATE_EVERY", "8"))
 MAX_THESES_PER_BLOCK = int(os.getenv("MAX_THESES_PER_BLOCK", "6"))
 MEDIATOR_MIN_CONFIDENCE = _f("MEDIATOR_MIN_CONFIDENCE", 0.6)
+# «Имя: текст» в начале сообщения = автор «Имя» (один человек играет всю команду)
+ROLEPLAY_NAMES = os.getenv("ROLEPLAY_NAMES", "1") == "1"
 SNAPSHOT_TIMEOUT_S = _f("SNAPSHOT_TIMEOUT_S", 10)
 
 DATA_DIR = Path(os.getenv("DATA_DIR", BACKEND_DIR / "data"))

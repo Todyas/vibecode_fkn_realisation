@@ -1,6 +1,7 @@
 """Telegram-бот: роутер команд /no_idea, приём сообщений, отправка фото/файлов, cooldown."""
 import asyncio
 import logging
+import re
 import time
 
 from aiogram import Bot, Dispatcher, F, Router
@@ -31,6 +32,16 @@ def author_name(m: TgMessage) -> str:
         return m.sender_chat.title if m.sender_chat else "?"
     name = " ".join(x for x in (u.first_name, u.last_name) if x).strip()
     return name or (f"@{u.username}" if u.username else str(u.id))
+
+
+ROLE_RE = re.compile(r"^\s*([A-ZА-ЯЁ][\w\-]{1,20})\s*:\s+(.+)$", re.S)
+
+
+def split_role(text: str, fallback: str) -> tuple[str, str]:
+    """«Маркетолог: текст» -> (Маркетолог, текст), чтобы один человек мог играть всех на тесте."""
+    if config.ROLEPLAY_NAMES and (m := ROLE_RE.match(text)):
+        return m.group(1), m.group(2).strip()
+    return fallback, text
 
 
 def canvas_button(room: TopicRoom, node_id: str | None = None) -> InlineKeyboardMarkup | None:
@@ -245,7 +256,8 @@ def setup(registry: Registry) -> Router:
                 return
             if conflict_id and room.topic.status == "open":
                 # ответ на вопрос бота по конфликту -> RESOLVE
-                await room.on_message(author_name(m), text, tg_user_id=m.from_user.id,
+                who, text = split_role(text, author_name(m))
+                await room.on_message(who, text, tg_user_id=m.from_user.id,
                                       tg_message_id=m.message_id, reply_to_tg=reply.message_id,
                                       resolves_conflict=conflict_id)
                 return
@@ -255,7 +267,8 @@ def setup(registry: Registry) -> Router:
         room = registry.current(m.chat.id)
         if room is None:
             return
-        await room.on_message(author_name(m), text,
+        who, text = split_role(text, author_name(m))
+        await room.on_message(who, text,
                               tg_user_id=m.from_user.id if m.from_user else None,
                               tg_message_id=m.message_id,
                               reply_to_tg=reply.message_id if reply else None)

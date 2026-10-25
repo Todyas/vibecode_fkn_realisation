@@ -54,3 +54,10 @@ def test_find_key():
     assert find_key(keys, "онб") is None                # два кандидата
     assert find_key(keys, "нет") is None
     assert norm_key(" Редизайн   Онбординга ") == "редизайн онбординга"
+
+
+def test_split_role():
+    from app.bot import split_role
+    assert split_role("Маркетолог: нужна рассылка", "Bodya") == ("Маркетолог", "нужна рассылка")
+    assert split_role("просто текст", "Bodya") == ("Bodya", "просто текст")
+    assert split_role("в 10:30 созвон", "Bodya") == ("Bodya", "в 10:30 созвон")
