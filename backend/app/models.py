@@ -126,7 +126,7 @@ class Label(BaseModel):
 
 class ExtractOp(BaseModel):
     op: Literal["add_node", "attach_source", "update_node", "change_constraint",
-                "resolve_question", "add_dependency"]
+                "resolve_question", "add_dependency", "assign"]
     ref: str | None = None              # временный id нового узла
     section: Section | None = None
     parent_id: str | None = None        # существующий id или ref

@@ -58,6 +58,10 @@ class TopicRoom:
                          tg_message_id: int | None = None, reply_to_tg: int | None = None,
                          resolves_conflict: str | None = None, is_agent: bool = False,
                          process: bool = True) -> Message:
+        if process and not is_agent and any(
+                m.author == author and m.text.strip() == text.strip() and time.time() - m.ts < 600
+                for m in self.topic.messages[-10:] if not m.is_agent):
+            process = False                       # дубль (переслали ещё раз) — на канвас не идёт
         msg = Message(seq=len(self.topic.messages), ts=time.time(), text=text, author=author,
                       tg_user_id=tg_user_id, tg_message_id=tg_message_id,
                       reply_to_seq=self.by_tg.get(reply_to_tg) if reply_to_tg else None,

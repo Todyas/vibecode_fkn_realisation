@@ -42,7 +42,14 @@ def msg_line(m: Message) -> str:
 def extractor_input(cv: Canvas, messages: list[Message], batch: list[Message]) -> str:
     first = batch[0].seq
     ctx = [m for m in messages if m.seq < first][-8:]
-    return ("КАНВАС:\n" + canvas_compact(cv) +
+    open_c = [c for c in cv.conflicts if c.status == "open"]
+    conflicts = ""
+    if open_c:
+        conflicts = "\n\nОТКРЫТЫЕ КОНФЛИКТЫ (если новое сообщение выбирает сторону — resolve_question):\n" + \
+            "\n".join(f"{c.question_id}: {(cv.get(c.question_id).text if cv.get(c.question_id) else '')} "
+                      f"({c.a} {cv.get(c.a).text if cv.get(c.a) else ''} vs {c.b} {cv.get(c.b).text if cv.get(c.b) else ''})"
+                      for c in open_c)
+    return ("КАНВАС:\n" + canvas_compact(cv) + conflicts +
             "\n\nКОНТЕКСТ:\n" + ("\n".join(msg_line(m) for m in ctx) or "(нет)") +
             "\n\nНОВЫЕ СООБЩЕНИЯ:\n" + "\n".join(msg_line(m) for m in batch))
 

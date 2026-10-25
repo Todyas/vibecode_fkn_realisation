@@ -150,3 +150,26 @@ def test_render_compact_and_markdown():
     assert "[constraints] N1 Бюджет небольшой" in txt and "цель: довести до покупки" in txt
     md = render.markdown(t)
     assert "## Решение" in md and "Персональные предложения" in md
+
+
+def test_constraint_change_and_assign_and_essence():
+    t = mk_topic(("Бодя", "бюджет 5000"), ("Саша", "бюджет 3000"), ("Бодя", "я ищу базы"))
+    reducer.apply_extract(t, ex(
+        dict(op="add_node", section="constraints", text="Бюджет до 5000 на человека", source_msg=0, author=""),
+        dict(op="add_node", section="solution", text="Выезд в ноябре на 2 дня", source_msg=0, author="")))
+    assert reducer.ensure_essence(t) and t.canvas.theses("essence")[0].text == "Выезд в ноябре на 2 дня"
+    _, sig = reducer.apply_extract(t, ex(
+        dict(op="add_node", section="constraints", text="Бюджет 3000 на человека", source_msg=1, author="")))
+    assert len(t.canvas.theses("constraints")) == 1
+    assert sig.changed and t.canvas.theses("constraints")[0].text == "Бюджет 3000 на человека"
+    reducer.apply_extract(t, ex(dict(op="assign", node_id="N2", text="Бодя", source_msg=2, author="")))
+    assert t.canvas.get("N2").tag == "делает: Бодя"
+
+
+async def test_duplicate_message_not_processed():
+    from app.topics import Registry
+    reg = Registry()
+    room, _ = await reg.start(9, "x", "y")
+    await room.on_message("Бодя", "Ок, я ищу базы", process=False)
+    await room.on_message("Бодя", "Ок, я ищу базы")
+    assert room.inbox.empty() and room.human_since_consolidate == 0

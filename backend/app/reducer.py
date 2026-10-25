@@ -117,6 +117,35 @@ def _create_node(topic: Topic, p: Patch, *, section: str | None, parent_id: str 
     return node, None
 
 
+CONSTRAINT_KEYS = ("бюджет", "денег", "деньг", "срок", "дедлайн", "дорог", "ехать", "добира")
+
+
+def similar_constraint(cv, text: str | None) -> Node | None:
+    """Существующее ограничение про то же самое (бюджет, срок, дорога)."""
+    t = (text or "").casefold()
+    keys = [k for k in CONSTRAINT_KEYS if k in t]
+    if not keys:
+        return None
+    for n in cv.theses("constraints"):
+        if any(k in n.text.casefold() for k in keys):
+            return n
+    return None
+
+
+def ensure_essence(topic: Topic) -> list[dict]:
+    """Если LLM не заполнила «Суть», берём первый тезис решения или название темы."""
+    cv = topic.canvas
+    if cv.theses("essence") or not any(not m.is_agent for m in topic.messages):
+        return []
+    sol = cv.theses("solution")
+    if not sol:
+        return []
+    p = Patch(topic)
+    _create_node(topic, p, section="essence", parent_id=None, text=sol[0].text, goal=None,
+                 author="agent", source=None)
+    return p.to_ops()
+
+
 # ---------- Extractor ----------
 
 def apply_extract(topic: Topic, res: ExtractResult) -> tuple[list[dict], Signals]:
@@ -128,6 +157,10 @@ def apply_extract(topic: Topic, res: ExtractResult) -> tuple[list[dict], Signals
         src = op.source_msg if op.source_msg in valid_seqs else None
         author = topic.messages[src].author if src is not None else op.author
         try:
+            if op.op == "add_node" and op.section == "constraints" and not op.parent_id:
+                same = similar_constraint(cv, op.text)
+                if same is not None:           # «бюджет 3000» при «бюджет 5000» = смена ограничения
+                    op = op.model_copy(update={"op": "change_constraint", "node_id": same.id})
             if op.op == "add_node":
                 node, err = _create_node(topic, p, section=op.section,
                                          parent_id=_resolve_ref(refs, op.parent_id), text=op.text,
@@ -161,6 +194,10 @@ def apply_extract(topic: Topic, res: ExtractResult) -> tuple[list[dict], Signals
                     node.status, node.status_reason, node.revise_text = "active", None, None
                 p.touch(node)
             elif op.op == "change_constraint":
+                if node.text.casefold() == _clean(op.text).casefold():
+                    _add_unique(node.source_msgs, src)
+                    p.touch(node)
+                    continue
                 if node.section != "constraints" or not _clean(op.text):
                     sig.dropped.append(f"change_constraint: {node.id} not a constraint")
                     continue
@@ -183,6 +220,14 @@ def apply_extract(topic: Topic, res: ExtractResult) -> tuple[list[dict], Signals
                     node.status_reason = _clean(op.text) or None
                     _add_unique(node.source_msgs, src)
                     p.touch(node)
+            elif op.op == "assign":
+                who = _clean(op.text, 40)
+                if not who:
+                    sig.dropped.append("assign: no owner")
+                    continue
+                node.tag = f"делает: {who}"
+                _add_unique(node.source_msgs, src)
+                p.touch(node)
             elif op.op == "add_dependency":
                 c = cv.get(_resolve_ref(refs, op.constraint_id))
                 if c is None or c.section != "constraints" or c.id == node.id:

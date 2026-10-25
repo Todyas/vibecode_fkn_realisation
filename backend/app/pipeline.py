@@ -25,6 +25,7 @@ async def process_batch(room: TopicRoom, batch: list[Message]) -> None:
         return
     patch, sig = reducer.apply_extract(topic, res)
     await room.patch(patch)
+    await room.patch(reducer.ensure_essence(topic))
     triggers.collect(room, sig, batch)
     for _ in range(MAX_TRIGGERS_PER_CYCLE):
         trig = triggers.pick(room)
