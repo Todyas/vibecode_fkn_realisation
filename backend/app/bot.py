@@ -6,7 +6,7 @@ import time
 
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError, TelegramRetryAfter
-from aiogram.types import (BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup,
+from aiogram.types import (BotCommand, BufferedInputFile, InlineKeyboardButton, InlineKeyboardMarkup,
                            Message as TgMessage)
 
 from . import commands, config, pipeline, render, snapshot
@@ -16,7 +16,8 @@ log = logging.getLogger(__name__)
 router = Router()
 
 HELP = (
-    "Я веду канвас обсуждения темы прямо из чата.\n\n"
+    "Я веду канвас обсуждения темы прямо из чата. Добавь меня в группу (privacy mode off), "
+    "открой тему — и пишите как обычно, я соберу тезисы на сайте.\n\n"
     "/no_idea start <имя> — открыть тему (или переоткрыть старую)\n"
     "/no_idea stop [имя] — закрыть: картинка канваса + итог\n"
     "/no_idea export [имя] — картинка + файл .md\n"
@@ -250,6 +251,11 @@ def setup(registry: Registry) -> Router:
                 log.exception("command failed")
                 await m.reply("Что-то сломалось, попробуй ещё раз.")
             return
+        if m.text and re.match(r"^/(start|help)(@\w+)?(\s|$)", m.text):
+            addressed = re.match(r"^/\w+@(\w+)", m.text)
+            if m.chat.type == "private" or (addressed and addressed.group(1).lower() == me.username.lower()):
+                await m.reply(HELP, disable_web_page_preview=True)
+            return
         if text.startswith("/"):
             return                                    # чужие команды
         reply = m.reply_to_message
@@ -286,6 +292,13 @@ async def run_polling(registry: Registry) -> None:
     dp.include_router(setup(registry))
     registry.notifier = TelegramNotifier(bot, registry)
     me = await bot.get_me()
+    try:
+        await bot.set_my_commands([
+            BotCommand(command="no_idea", description="start|stop|export|ask|list <тема> — канвас обсуждения"),
+            BotCommand(command="help", description="Как пользоваться"),
+        ])
+    except Exception:  # noqa: BLE001
+        log.exception("set_my_commands failed")
     log.info("bot @%s started (long polling)", me.username)
     try:
         await dp.start_polling(bot, handle_signals=False,
