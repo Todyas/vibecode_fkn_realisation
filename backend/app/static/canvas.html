@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/no_idea — канвас</title>
+<style>
+  :root { --bg:#f6f5f2; --card:#fff; --ink:#1d1d1f; --muted:#6b6b70; --line:#e2e0db;
+          --red:#d93a3a; --yellow:#e0a800; --green:#2f9e62; --accent:#3b5bdb; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.4 -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); }
+  header { display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid var(--line); background:#fff; }
+  header h1 { font-size:20px; margin:0; }
+  .pill { font-size:12px; padding:3px 8px; border-radius:99px; background:#eee; color:var(--muted); }
+  .pill.open { background:#e3f6ec; color:var(--green); }
+  .pill.agent.reading, .pill.agent.thinking { background:#e8edff; color:var(--accent); }
+  .closed-banner { background:#333; color:#fff; padding:8px 20px; display:none; }
+  .closed .closed-banner { display:block; }
+  main { display:grid; grid-template-columns: 1fr 320px; gap:0; min-height: calc(100vh - 56px); }
+  .canvas { display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; padding:18px; align-content:start; }
+  .block { background:#fbfaf8; border:1px solid var(--line); border-radius:12px; padding:12px; min-height:90px; }
+  .block h2 { font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:0 0 8px; }
+  .block.essence { grid-column: 1 / -1; }
+  .block.solution { grid-row: span 2; }
+  .node { background:var(--card); border:1.5px solid var(--line); border-radius:9px; padding:7px 9px; margin:6px 0; cursor:pointer; transition: box-shadow .3s, border-color .3s; }
+  .node .meta { font-size:12px; color:var(--muted); margin-top:3px; }
+  .node .kids { margin:6px 0 0 12px; }
+  .node .kids .node { font-size:14px; margin:4px 0; }
+  .node.new { box-shadow: 0 0 0 3px #b9c8ff; }
+  .node.disputed { border-color:var(--red); }
+  .node.needs_review { border-color:var(--yellow); border-style:dashed; }
+  .node.rejected { opacity:.55; text-decoration: line-through; }
+  .node.hl { box-shadow: 0 0 0 4px #ffd43b; }
+  .badge { display:inline-block; font-size:11px; padding:1px 6px; border-radius:6px; margin-left:4px; }
+  .badge.red { background:#fde2e2; color:var(--red); }
+  .badge.yel { background:#fff3c4; color:#8a6500; }
+  .badge.tag { background:#eef; color:var(--accent); }
+  .revise { font-size:12px; color:#8a6500; margin-top:3px; }
+  .essence .node { font-size:18px; font-weight:600; }
+  aside { border-left:1px solid var(--line); background:#fff; padding:12px; overflow:auto; max-height: calc(100vh - 56px); position:sticky; top:0; }
+  aside h3 { margin:0 0 8px; font-size:13px; color:var(--muted); text-transform:uppercase; }
+  .msg { padding:6px 0; border-bottom:1px solid #f0efec; font-size:14px; }
+  .msg b { font-weight:600; }
+  .msg.agent { color:var(--accent); }
+  .msg.hl { background:#fff7d6; }
+  .toast { position:fixed; right:340px; bottom:20px; background:#222; color:#fff; padding:10px 14px; border-radius:10px; opacity:0; transition:opacity .3s; }
+  .toast.show { opacity:.92; }
+  .pop { position:fixed; inset:0; background:rgba(0,0,0,.25); display:none; align-items:center; justify-content:center; }
+  .pop.show { display:flex; }
+  .pop .box { background:#fff; border-radius:12px; padding:16px; max-width:520px; width:90%; max-height:70vh; overflow:auto; }
+  .print aside, .print .toast { display:none; }
+  .print main { grid-template-columns: 1fr; }
+  .print .node { transition:none; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } .canvas { grid-template-columns: 1fr; } aside { max-height:none; position:static; } .toast{right:20px;} }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">…</h1>
+  <span id="status" class="pill">…</span>
+  <span id="agent" class="pill agent">бот: idle</span>
+</header>
+<div class="closed-banner">Тема закрыта</div>
+<main>
+  <section class="canvas" id="canvas"></section>
+  <aside><h3>Чат</h3><div id="feed"></div></aside>
+</main>
+<div class="toast" id="toast"></div>
+<div class="pop" id="pop"><div class="box" id="popbox"></div></div>
+<script>
+const SECTIONS = [["essence","Суть"],["problem","Проблема"],["audience","Для кого"],["solution","Решение"],
+  ["constraints","Ограничения"],["risks","Риски"],["questions","Открытые вопросы"]];
+const token = location.pathname.split("/").filter(Boolean).pop();
+const PRINT = new URLSearchParams(location.search).has("print");
+if (PRINT) document.body.classList.add("print");
+let S = { topic:null, messages:[], canvas:{version:0,nodes:[],conflicts:[]}, agent_status:"idle" };
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function nodeHtml(n, all) {
+  const kids = all.filter(k => k.parent_id === n.id);
+  const humans = n.authors.filter(a => a !== "agent");
+  let meta = humans.join(", ");
+  if (n.authors.includes("agent")) meta += (meta ? " · " : "") + "предложил бот";
+  if (humans.length > 1) meta += ` · +${humans.length - 1}`;
+  const conf = S.canvas.conflicts.filter(c => c.status === "open" && (c.a === n.id || c.b === n.id))
+    .map(c => `<span class="badge red">конфликт с ${esc(c.a === n.id ? c.b : c.a)}</span>`).join("");
+  const tag = n.tag ? `<span class="badge tag">${esc(n.tag)}</span>` : "";
+  const nr = n.status === "needs_review" ? `<span class="badge yel">пересмотреть</span>` : "";
+  const reason = n.status_reason && (n.status === "rejected" || n.status === "needs_review") ? ` title="${esc(n.status_reason)}"` : "";
+  const rev = n.revise_text ? `<div class="revise">→ ${esc(n.revise_text)}</div>` : "";
+  return `<div class="node ${n.status}" id="${n.id}" data-id="${n.id}"${reason}>
+    <div>${esc(n.text)} ${tag}${nr}${conf}</div>
+    ${meta ? `<div class="meta">${esc(meta)}${n.status_reason && n.status !== "active" ? " · " + esc(n.status_reason) : ""}</div>` : ""}
+    ${rev}
+    ${kids.length ? `<div class="kids">${kids.map(k => nodeHtml(k, all)).join("")}</div>` : ""}
+  </div>`;
+}
+
+function render() {
+  const t = S.topic || {};
+  document.getElementById("title").textContent = t.name || "…";
+  const st = document.getElementById("status");
+  st.textContent = t.status === "open" ? "открыта" : "закрыта";
+  st.className = "pill " + (t.status === "open" ? "open" : "");
+  document.body.classList.toggle("closed", t.status === "closed");
+  const ag = document.getElementById("agent");
+  ag.textContent = {idle:"бот слушает", reading:"бот читает…", thinking:"бот думает…"}[S.agent_status] || S.agent_status;
+  ag.className = "pill agent " + S.agent_status;
+  const all = S.canvas.nodes;
+  document.getElementById("canvas").innerHTML = SECTIONS.map(([k, title]) => {
+    const top = all.filter(n => n.section === k && !n.parent_id);
+    return `<div class="block ${k}"><h2>${title}</h2>${top.map(n => nodeHtml(n, all)).join("")}</div>`;
+  }).join("");
+  highlightHash();
+}
+
+function renderFeed() {
+  const feed = document.getElementById("feed");
+  feed.innerHTML = S.messages.map(m =>
+    `<div class="msg ${m.is_agent ? "agent" : ""}" id="m${m.seq}"><b>${esc(m.is_agent ? "бот" : m.author)}:</b> ${esc(m.text)}</div>`).join("");
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function highlightHash() {
+  const id = location.hash.slice(1);
+  document.querySelectorAll(".node.hl").forEach(e => e.classList.remove("hl"));
+  if (!id) return;
+  const el = document.getElementById(id);
+  if (el) { el.classList.add("hl"); if (!PRINT) el.scrollIntoView({block:"center", behavior:"smooth"}); }
+}
+window.addEventListener("hashchange", highlightHash);
+
+function applyPatch(p) {
+  if (p.version !== S.canvas.version + 1) { return reload(); }
+  for (const op of p.ops) {
+    if (op.op === "remove_node") S.canvas.nodes = S.canvas.nodes.filter(n => n.id !== op.id);
+    else if (op.op === "upsert_node") {
+      const i = S.canvas.nodes.findIndex(n => n.id === op.node.id);
+      if (i >= 0) S.canvas.nodes[i] = op.node; else S.canvas.nodes.push(op.node);
+    } else if (op.op === "upsert_conflict") {
+      const i = S.canvas.conflicts.findIndex(c => c.id === op.conflict.id);
+      if (i >= 0) S.canvas.conflicts[i] = op.conflict; else S.canvas.conflicts.push(op.conflict);
+    }
+  }
+  S.canvas.version = p.version;
+  render();
+}
+
+function toast(text) {
+  const t = document.getElementById("toast");
+  t.textContent = text; t.classList.add("show");
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 3500);
+}
+
+document.getElementById("canvas").addEventListener("click", e => {
+  const el = e.target.closest(".node"); if (!el) return;
+  e.stopPropagation();
+  const n = S.canvas.nodes.find(x => x.id === el.dataset.id); if (!n) return;
+  const quotes = n.source_msgs.map(s => S.messages.find(m => m.seq === s)).filter(Boolean);
+  document.querySelectorAll(".msg.hl").forEach(x => x.classList.remove("hl"));
+  quotes.forEach(m => document.getElementById("m" + m.seq)?.classList.add("hl"));
+  document.getElementById("popbox").innerHTML = `<h3>${esc(n.text)}</h3>` +
+    (n.goal ? `<p><i>Цель: ${esc(n.goal)}</i></p>` : "") +
+    (quotes.length ? quotes.map(m => `<p><b>${esc(m.author)}:</b> ${esc(m.text)}</p>`).join("")
+                   : "<p>Добавил бот по ходу обсуждения.</p>");
+  document.getElementById("pop").classList.add("show");
+});
+document.getElementById("pop").addEventListener("click", () => document.getElementById("pop").classList.remove("show"));
+
+async function reload() {
+  const r = await fetch(`/api/topics/${token}`);
+  if (!r.ok) { document.getElementById("title").textContent = "Тема не найдена"; window.__canvasReady = true; return; }
+  S = await r.json();
+  render(); renderFeed();
+}
+
+function connect() {
+  const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws/topics/${token}`);
+  ws.onmessage = ev => {
+    const m = JSON.parse(ev.data);
+    if (m.type === "snapshot") { S = m; render(); renderFeed(); }
+    else if (m.type === "message") { S.messages.push(m.message); renderFeed(); }
+    else if (m.type === "canvas_patch") applyPatch(m);
+    else if (m.type === "agent_status") { S.agent_status = m.status; render(); }
+    else if (m.type === "topic_status") { S.topic.status = m.status; S.topic.summary = m.summary; render(); }
+    else if (m.type === "toast") toast(m.text);
+  };
+  ws.onclose = () => setTimeout(connect, 1500);
+}
+
+if (PRINT) {
+  reload().then(() => requestAnimationFrame(() => requestAnimationFrame(() => { window.__canvasReady = true; })));
+} else {
+  connect();
+}
+</script>
+</body>
+</html>
