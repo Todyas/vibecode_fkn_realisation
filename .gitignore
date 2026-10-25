@@ -1,7 +1,7 @@
+*.pyc
 .env
+.pytest_cache/
 .venv/
 __pycache__/
-*.pyc
-.pytest_cache/
 backend/data/
 node_modules/

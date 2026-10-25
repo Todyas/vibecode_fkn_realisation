@@ -8,11 +8,12 @@
 
 ```bash
 cp .env.example .env            # впиши TG_BOT_TOKEN, LLM_API_KEY, PUBLIC_BASE_URL
-cd backend
-python3 -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt && playwright install chromium
-python -m app                   # бот (long polling) + сайт + API на :8000
+uv sync                         # зависимости из pyproject.toml (в корне)
+uv run playwright install chromium
+cd backend && uv run python -m app   # бот (long polling) + сайт + API на :8000
 ```
+
+Без uv: `cd backend && pip install -r requirements.txt && playwright install chromium && python -m app`.
 
 Публичная ссылка для телефонов: `cloudflared tunnel --url http://localhost:8000` → адрес в `PUBLIC_BASE_URL`.
 
