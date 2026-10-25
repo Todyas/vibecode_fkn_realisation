@@ -203,6 +203,30 @@ async def debug_llm():
             f"<h1>Последние LLM-вызовы</h1>{body}")
 
 
+@app.get("/", response_class=HTMLResponse)
+async def index():
+    llm_ok = "✅" if config.llm_enabled() else "❌ нет LLM_API_KEY"
+    bot_ok = "✅" if registry.notifier else "❌ нет TG_BOT_TOKEN"
+    return f"""<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width">
+<title>/no_idea</title>
+<style>body{{font:16px system-ui;max-width:640px;margin:40px auto;padding:0 16px;line-height:1.5}}
+code{{background:#f2f2f2;padding:2px 5px;border-radius:4px}}button{{font:inherit;padding:8px 14px}}</style>
+<h1>/no_idea</h1>
+<p>Сервер работает. Бот: {bot_ok} · LLM: {llm_ok} · кэш: {config.CACHE_MODE} · тем: {len(registry.rooms)}</p>
+<p>Добавь бота в группу и напиши <code>/no_idea start Тема</code> — бот пришлёт ссылку на канвас.</p>
+<h3>Без Telegram</h3>
+<p><button onclick="demo()">Создать тему «Демо» и проиграть demo_shop</button> <span id=out></span></p>
+<p><a href="/debug/llm">/debug/llm</a> · <a href="/healthz">/healthz</a></p>
+<script>
+async function demo(){{
+  const t = await (await fetch('/api/dev/topic',{{method:'POST',headers:{{'content-type':'application/json'}},body:JSON.stringify({{name:'Демо'}})}})).json();
+  await fetch('/api/dev/topics/'+t.token+'/reset',{{method:'POST'}});
+  await fetch('/api/topics/'+t.token+'/replay',{{method:'POST',headers:{{'content-type':'application/json'}},body:JSON.stringify({{scenario:'demo_shop',delay:5}})}});
+  location.href = '/t/'+t.token;
+}}
+</script>"""
+
+
 @app.get("/healthz")
 async def healthz():
     return {"ok": True, "topics": len(registry.rooms), "bot": bool(registry.notifier),
