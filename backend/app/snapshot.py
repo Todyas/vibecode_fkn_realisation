@@ -51,7 +51,7 @@ async def canvas_png(token: str) -> bytes | None:
         async with _lock:
             browser = await _ensure_browser()
         page = await browser.new_page(viewport={"width": 1600, "height": 1000},
-                                      device_scale_factor=1.5)
+                                      device_scale_factor=2)
         try:
             await page.goto(url, timeout=config.SNAPSHOT_TIMEOUT_S * 1000)
             await page.wait_for_function("window.__canvasReady === true",
@@ -61,4 +61,27 @@ async def canvas_png(token: str) -> bytes | None:
             await page.close()
     except Exception as e:  # noqa: BLE001
         log.warning("snapshot failed for %s: %s", token, e)
+        return None
+
+
+async def canvas_pdf(token: str) -> bytes | None:
+    """Векторный PDF канваса одной страницей (текст не мылится при зуме)."""
+    url = f"http://127.0.0.1:{config.PORT}/t/{token}?print=1"
+    try:
+        async with _lock:
+            browser = await _ensure_browser()
+        page = await browser.new_page(viewport={"width": 1600, "height": 1000})
+        try:
+            await page.goto(url, timeout=config.SNAPSHOT_TIMEOUT_S * 1000)
+            await page.wait_for_function("window.__canvasReady === true",
+                                         timeout=config.SNAPSHOT_TIMEOUT_S * 1000)
+            await page.emulate_media(media="screen")
+            height = await page.evaluate("document.documentElement.scrollHeight")
+            return await page.pdf(width="1600px", height=f"{height + 2}px", print_background=True,
+                                  margin={"top": "0", "right": "0", "bottom": "0", "left": "0"},
+                                  page_ranges="1")
+        finally:
+            await page.close()
+    except Exception as e:  # noqa: BLE001
+        log.warning("pdf failed for %s: %s", token, e)
         return None
