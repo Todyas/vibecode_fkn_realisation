@@ -1,57 +1,93 @@
-# /no_idea — второй мозг в рабочем Telegram-чате
+# no idea — командный второй мозг в Telegram
 
-Бот `/no_idea` слушает тему в групповом чате и ведёт живой канвас обсуждения на сайте:
-тезисы по 7 блокам, сведение одной цели, конфликты с вопросом в чат, последствия смены ограничений.
-На закрытии присылает PNG канваса + итог до 5 строк. Лицензия MIT.
+Проект команды «no idea» на хакатоне Вайбкодинг ФКН (VibeHack), тема 3 «Второй мозг». Лицензия MIT.
 
-## Запуск (одна команда после установки)
+**Проблема.** Идею обсуждают в сотне сообщений рабочего чата. Через час никто не помнит, на чём сошлись,
+а тому, кто выпал, приходится листать всё. Отдельный сервис для обсуждений никто не откроет: команда уже сидит в Telegram.
 
-```bash
-cp .env.example .env            # впиши TG_BOT_TOKEN, LLM_API_KEY, PUBLIC_BASE_URL
-uv sync                         # зависимости из pyproject.toml (в корне)
-uv run playwright install chromium
-cd backend && uv run python -m app   # бот (long polling) + сайт + API на :8000
-```
+**Решение.** Бот `/no_idea` живёт в рабочем чате. Пока тема открыта, он ведёт живой канвас на сайте —
+тезисный конспект из 7 блоков (суть, проблема, для кого, решение, ограничения, риски, открытые вопросы).
+В чат пишет редко: когда мнения действительно расходятся, когда меняется ограничение или когда его спросили.
+На закрытии присылает картинку и PDF канваса, итог до 5 строк и файл .md.
 
-Без uv: `cd backend && pip install -r requirements.txt && playwright install chromium && python -m app`.
+## Что умеет бот
 
-Публичная ссылка для телефонов: `cloudflared tunnel --url http://localhost:8000` → адрес в `PUBLIC_BASE_URL`.
+- **Одна цель, разные слова** — сводит предложения разных людей в общий тезис, способы каждого остаются деталями.
+- **Настоящий конфликт** — не склеивает, а рисует красное ребро и спрашивает в чате, что важнее. Ответ реплаем
+  (или «X важнее» в чате) закрывает конфликт, проигравший тезис зачёркивается с причиной.
+- **Смена ограничения** — «бюджет 3000, а не 5000» обновляет ограничение и подсвечивает всё, что от него зависело.
+- **Кто что делает** — «я ищу базы, Саша берёт квест» становится пометкой на карточке и попадает в итог.
+- **Вопросы по канвасу** — `/no_idea ask что решили по бюджету?` отвечает с именами и ссылкой на тезис.
+- **Проверяемость** — клик по тезису на сайте показывает реплики, из которых он взят.
 
-Сайт канваса — SPA в `frontend/` (сборка в `frontend/dist`, её раздаёт FastAPI). Если сборки нет,
-работает запасная страница бэкенда (`backend/app/static/canvas.html`, также доступна на `/stub/t/{token}`).
+Гарантии в коде, а не в промпте: LLM возвращает только операции над канвасом, Python-редьюсер их проверяет;
+слить узлы открытого конфликта или потерять чьё-то предложение он не даст.
 
-## Команды в чате
+## Команды
 
 | Команда | Что делает |
 |---|---|
-| `/no_idea start <имя>` | открыть тему или переоткрыть старую, ссылка на канвас |
-| `/no_idea stop [имя]` | закрыть: PNG канваса + саммари |
-| `/no_idea export [имя]` | PNG + файл .md + ссылка |
-| `/no_idea ask [имя] <вопрос>` | ответ по канвасу (или реплай на сообщение бота) |
-| `/no_idea list`, `/no_idea help` | темы чата, справка |
+| `/no_idea start <тема>` | открыть тему (старое имя — переоткрыть), ссылка на канвас |
+| `/no_idea stop [тема]` | закрыть: картинка + PDF канваса и итог |
+| `/no_idea export [тема]` | картинка, PDF и .md по открытой или закрытой теме |
+| `/no_idea ask [тема] <вопрос>` | ответ по канвасу; можно просто ответить боту реплаем |
+| `/no_idea list`, `/help` | темы чата, справка |
 
-Имя из нескольких слов — в кавычках. Реплай на вопрос бота по конфликту разрешает конфликт.
+Имя из нескольких слов — в кавычках. Для теста одним человеком: «Маркетолог: текст» засчитывается автору «Маркетолог».
 
-## Без Telegram (тесты, страховка на защите)
+## Запуск
 
 ```bash
-curl -XPOST localhost:8000/api/dev/topic -H 'content-type: application/json' -d '{"name":"Продажи"}'
-# -> {"token": "..."}; открой http://localhost:8000/t/<token>
-curl -XPOST localhost:8000/api/topics/<token>/replay -H 'content-type: application/json' \
-     -d '{"scenario":"demo_shop","upto":4,"delay":3}'
-curl localhost:8000/api/dev/topics/<token>/compact        # канвас текстом
-curl -XPOST localhost:8000/api/dev/topics/<token>/stop    # закрыть, PNG и .md в backend/data/
-curl -XPOST localhost:8000/api/dev/topics/<token>/reset   # очистить тему
+cp .env.example .env                 # TG_BOT_TOKEN, LLM_BASE_URL, LLM_API_KEY, модели
+uv sync && uv run playwright install chromium
+cd backend && uv run python -m app  # бот + сайт + API на :8000
 ```
 
-`/debug/llm` — последние 20 LLM-вызовов. `/healthz` — статус бота, LLM и кэша.
-`CACHE_MODE=record` на репетиции, `CACHE_MODE=replay` на защите.
+Подключение бота к группе — [docs/telegram_setup.md](docs/telegram_setup.md).
+Деплой с постоянным https-адресом (Railway, Dockerfile) — [docs/deploy.md](docs/deploy.md).
+Сценарий для теста в чате — [docs/test_dialog.md](docs/test_dialog.md). Без Telegram: кнопка демо на `http://localhost:8000/`.
 
 ## Устройство
 
-Один Python-процесс: aiogram 3 (long polling) + FastAPI + WebSocket. LLM возвращает операции,
-Reducer на Python их проверяет и применяет (`backend/app/reducer.py`), guards запрещают склеивать
-конфликты (`guards.py`). Состояние в памяти + журнал JSONL на тему (`backend/data/topics/`),
-при рестарте темы восстанавливаются из журнала без LLM. Контракт сайта — `docs/api-contract.md`.
+| Слой | Что используем |
+|---|---|
+| Бот | aiogram 3, long polling |
+| Бэкенд | Python, FastAPI + WebSocket, Pydantic v2, журнал JSONL на тему (рестарт без потерь) |
+| LLM | OpenAI-совместимый клиент через OpenRouter: Qwen — разбор сообщений и ответы, DeepSeek — конфликты, последствия, итог; кэш record/replay для демо |
+| Сайт | React + Vite, живое обновление через 2–3 с после сообщения |
+| Экспорт | Playwright: PNG и векторный PDF той же страницы, Markdown шаблоном |
 
-Тесты: `cd backend && pytest -q`.
+Шесть LLM-ролей: Extractor, Consolidator, Mediator, Impact, Summarizer, Answerer. Промпты — `backend/app/prompts/`.
+Контракт сайта и API — [docs/api-contract.md](docs/api-contract.md). Последние вызовы LLM видны на `/debug/llm`.
+
+```
+backend/app/    бот, темы, пайплайн, редьюсер, guards, триггеры, экспорт
+backend/tests/  юнит- и сквозные тесты (LLM подменена): cd backend && pytest -q
+frontend/       сайт канваса (сборка в frontend/dist раздаётся бэкендом)
+docs/           подключение, деплой, контракт API, журнал использования ИИ
+pm_repo/        материалы PM: правила хакатона, техдок, сценарий демо, AI-стратегия
+```
+
+## Команда
+
+| Участник | Роль | GitHub |
+|---|---|---|
+| Ева | Project Manager | [@doubleskvish](https://github.com/doubleskvish) |
+| Арина | Designer | [@vsekapec](https://github.com/vsekapec) |
+| Александр | Fullstack Developer | [@shiyanalex](https://github.com/shiyanalex) |
+| Богдан | ML / Fullstack Engineer | [@todyas](https://github.com/todyas) |
+| Александр | Tester / Speaker | [@MVRto01](https://github.com/MVRto01) |
+
+## Как мы использовали ИИ
+
+- **Богдан:** Claude (Claude Code) — координатор проекта и параллельные сессии написали бэкенд, бота, сайт и документацию по техдоку; человек ставил задачи, тестировал в Telegram и выбирал модели.
+- **Александр (Fullstack):** Claude Opus 5.5 (High).
+- **Арина:** ChatGPT — дизайн и презентация.
+- **Ева (PM):** Google Antigravity (Gemini 3.8 Flash High) — управление задачами, координация спринтов, единая архитектурная документация.
+
+Подробный журнал по спринтам — [docs/ai_usage.md](docs/ai_usage.md), стратегия — [pm_repo/AI_ENGINEERING_STRATEGY.md](pm_repo/AI_ENGINEERING_STRATEGY.md).
+
+## Материалы
+
+- Правила и критерии хакатона — [pm_repo/docs/initial_materials/](pm_repo/docs/initial_materials/)
+- Техдок и спринты, сценарий демо, модели данных — [pm_repo/docs/project_materials/](pm_repo/docs/project_materials/)
